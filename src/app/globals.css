@@ -24,3 +24,84 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Print Styles for Reading Mode */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  html, body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  /* Hide all interactive elements */
+  button, nav, header, footer {
+    display: none !important;
+  }
+
+  /* Reset containers for print */
+  .print-max-w-none {
+    max-width: none !important;
+  }
+
+  .print-shadow-none {
+    box-shadow: none !important;
+  }
+
+  .print-rounded-none {
+    border-radius: 0 !important;
+  }
+
+  .print-p-0 {
+    padding: 0 !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-bg-white {
+    background-color: white !important;
+  }
+
+  .print-text-black {
+    color: black !important;
+  }
+
+  .print-border-2 {
+    border: 1px solid #ccc !important;
+  }
+
+  /* Prevent page breaks inside important sections */
+  .break-inside-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Print-specific typography */
+  h1 {
+    font-size: 18pt !important;
+    margin-bottom: 12pt !important;
+  }
+
+  h2 {
+    font-size: 14pt !important;
+    margin-top: 12pt !important;
+    margin-bottom: 6pt !important;
+  }
+
+  p {
+    margin-bottom: 8pt !important;
+  }
+
+  /* Ensure vocabulary boxes and quizzes stay together */
+  .vocabulary-box, .quiz-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}

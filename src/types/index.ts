@@ -1,0 +1,98 @@
+export type StoryMode = 'bedtime' | 'reading';
+
+export type Age = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+export type Topic = 'dinosaur' | 'space' | 'airplane' | 'insect' | 'robot' | 'ocean' | 'forest' | 'animal';
+
+export type Duration = 5 | 8 | 10 | 12;
+
+export interface StoryParams {
+  mode: StoryMode;
+  age: Age;
+  topic: Topic;
+  minutes: Duration;
+}
+
+export interface BedtimeStory {
+  title: string;
+  body: string[];
+  recap: string[];
+  parent_tip: string;
+  source?: string;
+}
+
+export interface ReadingSection {
+  h: string;
+  p: string;
+}
+
+export interface VocabItem {
+  term: string;
+  explain: string;
+}
+
+export interface QuizMCQ {
+  type: 'mcq';
+  q: string;
+  options: string[];
+  answer: string;
+}
+
+export interface QuizShort {
+  type: 'short';
+  q: string;
+  answer_key: string;
+}
+
+export type Quiz = QuizMCQ | QuizShort;
+
+export interface ReadingPack {
+  intro: string;
+  sections: ReadingSection[];
+  vocab: VocabItem[];
+  quiz: Quiz[];
+}
+
+export interface ReadingStory {
+  title: string;
+  reading_pack: ReadingPack;
+  source?: string;
+}
+
+export type Story = BedtimeStory | ReadingStory;
+
+export interface CachedStory {
+  key: string;
+  story: Story;
+  mode: StoryMode;
+  timestamp: number;
+  params: {
+    age: Age;
+    topic: Topic;
+    minutes: Duration;
+  };
+}
+
+export interface HistoryItem {
+  id: string;
+  key: string;
+  mode: StoryMode;
+  title: string;
+  topic: Topic;
+  timestamp: number;
+}
+
+// Theme exploration types
+export interface SubTheme {
+  id: string;
+  name: string;
+  topics: Topic[];
+}
+
+export interface ThemeDomain {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  subThemes: SubTheme[];
+}
