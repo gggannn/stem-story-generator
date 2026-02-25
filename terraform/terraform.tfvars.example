@@ -1,0 +1,38 @@
+# ============================================
+# 阿里云 Access Key 配置
+# 获取方式: https://ram.console.aliyun.com/manage/ak
+# ============================================
+# ⚠️ 复制此文件为 terraform.tfvars 并填入真实值
+# ⚠️ 请勿将 terraform.tfvars 提交到 Git
+
+# 阿里云 Access Key ID
+access_key = "LTAI5txXXXXXXXXXXXXX"
+
+# 阿里云 Access Key Secret
+access_key_secret = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+# ============================================
+# SSH 密钥配置
+# ============================================
+# SSH 公钥内容 (使用你的现有公钥)
+# 获取方式: cat ~/.ssh/your_key.pub
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... user@hostname"
+
+# 允许 SSH 访问的来源 IP (可选，增强安全性)
+# 0.0.0.0/0 = 允许所有 IP
+# 你的 IP/32 = 只允许你的 IP 访问
+ssh_source_cidr = "0.0.0.0/0"
+
+# ============================================
+# 项目配置
+# ============================================
+project_name = "stem-story"
+
+# ============================================
+# 可选配置 - 一般不需要修改
+# ============================================
+# region = "cn-hangzhou"
+# availability_zone = "cn-hangzhou-i"
+# instance_type = "ecs.t6-c1m2.large"
+# system_disk_size = 40
+# eip_bandwidth = 5
