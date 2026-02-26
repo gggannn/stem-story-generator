@@ -39,14 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Terraform 敏感文件
-terraform/terraform.tfvars
-terraform/.terraform/
-terraform/*.tfstate
-terraform/*.tfstate.*
-terraform/.terraform.lock.hcl
-terraform/terraform
-
-# 部署配置
-deploy.env

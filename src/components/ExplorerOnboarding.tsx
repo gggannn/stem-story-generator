@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { getUserId } from '@/lib/storage';
 
 interface ExplorerProfile {
   name: string;
@@ -12,7 +13,9 @@ const PROFILE_KEY = 'stem_explorer_profile';
 
 function loadProfile(): ExplorerProfile | null {
   if (typeof window === 'undefined') return null;
-  const stored = localStorage.getItem(PROFILE_KEY);
+  const userId = getUserId();
+  const key = userId ? `${PROFILE_KEY}_${userId}` : PROFILE_KEY;
+  const stored = localStorage.getItem(key);
   if (!stored) return null;
   try {
     return JSON.parse(stored);
@@ -23,7 +26,9 @@ function loadProfile(): ExplorerProfile | null {
 
 function saveProfile(profile: ExplorerProfile) {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  const userId = getUserId();
+  const key = userId ? `${PROFILE_KEY}_${userId}` : PROFILE_KEY;
+  localStorage.setItem(key, JSON.stringify(profile));
 }
 
 interface OnboardingProps {

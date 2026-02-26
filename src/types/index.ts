@@ -96,3 +96,51 @@ export interface ThemeDomain {
   color: string;
   subThemes: SubTheme[];
 }
+
+// User authentication types
+export interface User {
+  id: string;
+  username: string;
+  displayName: string | null;
+  role: 'user' | 'admin';
+  isActive: boolean;
+  createdAt: number;
+  lastLoginAt: number | null;
+}
+
+export interface UserRecord extends User {
+  passwordHash: string;
+}
+
+export interface AuthUser extends Omit<UserRecord, 'passwordHash'> {}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  user: AuthUser;
+  token: string;
+}
+
+export interface JwtPayload {
+  userId: string;
+  username: string;
+  role: string;
+}
+
+export interface CreateUserInput {
+  username: string;
+  password: string;
+  displayName?: string;
+  role?: 'user' | 'admin';
+}
+
+// Storage key with user isolation
+export type StorageKey =
+  | 'stem_explorer_profile'
+  | 'stem_story_history'
+  | 'stem_story_cache'
+  | 'stem_story_api_count'
+  | 'stem_story_api_date';

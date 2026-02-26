@@ -100,7 +100,7 @@ cmd_stop() {
 
     echo ""
     log_step "停止 ECS 实例..."
-    $TERRAFORM_CMD apply -auto-approve \
+    $TERRAFORM_CMD destroy -auto-approve \
         -target=alicloud_eip_association.main \
         -target=alicloud_eip.main \
         -target=alicloud_instance.main \

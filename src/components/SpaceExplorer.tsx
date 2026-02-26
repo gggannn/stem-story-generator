@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ThemeDomain, Topic, Age, StoryMode, Duration, HistoryItem, CachedStory, Story } from '@/types';
+import { ThemeDomain, Topic, Age, StoryMode, Duration, HistoryItem, CachedStory, Story, User } from '@/types';
 import { themeDomains, getTopicFromSubTheme } from '@/config/theme-config';
 import { AgeCapsule } from '@/components/AgeCapsule';
 import { ModeToggle } from '@/components/ModeToggle';
 import { DurationCapsule } from '@/components/DurationCapsule';
 import { HistoryList } from '@/components/HistoryList';
 import { ProfileEditor, loadProfile } from '@/components/ExplorerOnboarding';
+import { getUserId, saveToStorage, loadCachedStory, saveCachedStory } from '@/lib/storage';
 import type { ExplorerProfile } from '@/components/ExplorerOnboarding';
-import { Sparkles, RefreshCw, Loader2, Rocket, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { Sparkles, RefreshCw, Loader2, Rocket, ChevronDown, ChevronRight, X, LogOut } from 'lucide-react';
 
 // Loading messages
 const loadingMessages = [
@@ -21,46 +22,11 @@ const loadingMessages = [
 ];
 
 // Storage keys
-const HISTORY_KEY = 'stem_story_history';
-const CACHE_PREFIX = 'stem_story_cache_';
+const HISTORY_KEY = 'stem_story_history' as const;
 
 function getCacheKey(mode: StoryMode, age: Age, topic: Topic, minutes: Duration): string {
   const suffix = mode === 'bedtime' ? minutes : 'A4';
   return `${mode}|${age}|${topic}|${suffix}|zh`;
-}
-
-function loadHistory(): HistoryItem[] {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(HISTORY_KEY);
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return [];
-  }
-}
-
-function saveHistory(items: HistoryItem[]) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 3)));
-}
-
-function loadCachedStory(key: string): CachedStory | null {
-  if (typeof window === 'undefined') return null;
-  const stored = localStorage.getItem(CACHE_PREFIX + key);
-  if (!stored) return null;
-  try {
-    const cached: CachedStory = JSON.parse(stored);
-    const now = Date.now();
-    const hours24 = 24 * 60 * 60 * 1000;
-    if (now - cached.timestamp > hours24) {
-      localStorage.removeItem(CACHE_PREFIX + key);
-      return null;
-    }
-    return cached;
-  } catch {
-    return null;
-  }
 }
 
 interface SpaceExplorerProps {
@@ -70,6 +36,8 @@ interface SpaceExplorerProps {
   history: HistoryItem[];
   initialAge?: Age;
   initialMode?: StoryMode;
+  user?: User | null;
+  onLogout?: () => void;
 }
 
 export function SpaceExplorer({
@@ -79,7 +47,10 @@ export function SpaceExplorer({
   history,
   initialAge,
   initialMode,
+  user,
+  onLogout,
 }: SpaceExplorerProps) {
+  const userId = getUserId();
   const [selectedDomain, setSelectedDomain] = useState<ThemeDomain | null>(null);
   const [expandedSubTheme, setExpandedSubTheme] = useState<string | null>(null);
   const [age, setAge] = useState<Age>(initialAge || (profile.age as Age) || 8);
@@ -124,7 +95,7 @@ export function SpaceExplorer({
     const cacheKey = getCacheKey(targetMode, targetAge, targetTopic, targetMinutes);
 
     if (!forceGenerate) {
-      const cached = loadCachedStory(cacheKey);
+      const cached = loadCachedStory(cacheKey, userId);
       if (cached) {
         setLocalHistory(prev => {
           const newHistoryItem: HistoryItem = {
@@ -136,7 +107,7 @@ export function SpaceExplorer({
             timestamp: Date.now(),
           };
           const newHistory = [newHistoryItem, ...prev].slice(0, 3);
-          saveHistory(newHistory);
+          saveToStorage(HISTORY_KEY, userId, newHistory);
           return newHistory;
         });
         onStoryGenerated(cached.story, targetMode);
@@ -178,7 +149,7 @@ export function SpaceExplorer({
         timestamp: Date.now(),
         params: { age: targetAge, topic: targetTopic, minutes: targetMinutes },
       };
-      localStorage.setItem(CACHE_PREFIX + cacheKey, JSON.stringify(cachedStory));
+      saveCachedStory(cachedStory, userId);
 
       setLocalHistory(prev => {
         const newHistoryItem: HistoryItem = {
@@ -190,7 +161,7 @@ export function SpaceExplorer({
           timestamp: Date.now(),
         };
         const newHistory = [newHistoryItem, ...prev].slice(0, 3);
-        saveHistory(newHistory);
+        saveToStorage(HISTORY_KEY, userId, newHistory);
         return newHistory;
       });
 
@@ -215,7 +186,7 @@ export function SpaceExplorer({
   };
 
   const handleHistorySelect = (item: HistoryItem) => {
-    const cached = loadCachedStory(item.key);
+    const cached = loadCachedStory(item.key, userId);
     if (cached) {
       onStoryGenerated(cached.story, cached.mode);
       setMode(cached.mode);
@@ -235,13 +206,33 @@ export function SpaceExplorer({
             <div className="text-2xl">🚀</div>
             <h1 className="text-xl font-bold text-slate-200">STEM 宇宙探索器</h1>
           </div>
-          <button
-            onClick={() => setShowProfileEditor(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"
-          >
-            <span className="text-lg">👤</span>
-            <span className="font-medium">{profile.name}</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowProfileEditor(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"
+            >
+              <span className="text-lg">👤</span>
+              <span className="font-medium">{profile.name}</span>
+            </button>
+            {user && onLogout && (
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"
+                title="登出"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+            {user && user.role === 'admin' && (
+              <button
+                onClick={() => window.location.href = '/admin'}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"
+                title="管理面板"
+              >
+                <span className="text-xs font-medium">管理</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Quick Settings Bar */}

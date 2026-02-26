@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { StoryMode, Age, Topic, Duration, HistoryItem, CachedStory, Story } from '@/types';
+import { StoryMode, Age, Topic, Duration, HistoryItem, CachedStory, Story, StorageKey } from '@/types';
 import { BedtimeResult } from '@/components/BedtimeResult';
 import { ReadingResult } from '@/components/ReadingResult';
 import { CosmicVoid } from '@/components/CosmicVoid';
 import { ExplorerOnboarding, loadProfile } from '@/components/ExplorerOnboarding';
 import { SpaceExplorer } from '@/components/SpaceExplorer';
 import type { ExplorerProfile } from '@/components/ExplorerOnboarding';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserId, loadFromStorage, saveToStorage, removeFromStorage, loadCachedStory, saveCachedStory, getCacheKey as getStorageCacheKey } from '@/lib/storage';
 import { RefreshCw, Rocket } from 'lucide-react';
 
 // Fun loading messages
@@ -20,70 +22,53 @@ const loadingMessages = [
 ];
 
 // Storage keys
-const HISTORY_KEY = 'stem_story_history';
-const CACHE_PREFIX = 'stem_story_cache_';
-const API_COUNT_KEY = 'stem_story_api_count';
-const API_DATE_KEY = 'stem_story_api_date';
+const HISTORY_KEY: StorageKey = 'stem_story_history';
+const CACHE_PREFIX: StorageKey = 'stem_story_cache';
+const API_COUNT_KEY: StorageKey = 'stem_story_api_count';
+const API_DATE_KEY: StorageKey = 'stem_story_api_date';
 
 function getCacheKey(mode: StoryMode, age: Age, topic: Topic, minutes: Duration): string {
   const suffix = mode === 'bedtime' ? minutes : 'A4';
   return `${mode}|${age}|${topic}|${suffix}|zh`;
 }
 
-function loadHistory(): HistoryItem[] {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(HISTORY_KEY);
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return [];
-  }
+function loadHistory(userId: string | null): HistoryItem[] {
+  return loadFromStorage(HISTORY_KEY, userId, []);
 }
 
-function saveHistory(items: HistoryItem[]) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 3)));
+function saveHistory(items: HistoryItem[], userId: string | null) {
+  saveToStorage(HISTORY_KEY, userId, items.slice(0, 3));
 }
 
-function loadCachedStory(key: string): CachedStory | null {
-  if (typeof window === 'undefined') return null;
-  const stored = localStorage.getItem(CACHE_PREFIX + key);
-  if (!stored) return null;
-  try {
-    const cached: CachedStory = JSON.parse(stored);
-    const now = Date.now();
-    const hours24 = 24 * 60 * 60 * 1000;
-    if (now - cached.timestamp > hours24) {
-      localStorage.removeItem(CACHE_PREFIX + key);
-      return null;
-    }
-    return cached;
-  } catch {
-    return null;
-  }
+function loadUserCachedStory(key: string, userId: string | null): CachedStory | null {
+  return loadCachedStory(key, userId);
 }
 
-function getApiCountFromStorage(): number {
+function saveUserCachedStory(cachedStory: CachedStory, userId: string | null): void {
+  saveCachedStory(cachedStory, userId);
+}
+
+function getApiCountFromStorage(userId: string | null): number {
   if (typeof window === 'undefined') return 0;
   const today = new Date().toDateString();
-  const storedDate = localStorage.getItem(API_DATE_KEY);
+  const storedDate = loadFromStorage(API_DATE_KEY, userId, null);
   if (storedDate !== today) {
-    localStorage.setItem(API_DATE_KEY, today);
-    localStorage.setItem(API_COUNT_KEY, '0');
+    saveToStorage(API_DATE_KEY, userId, today);
+    saveToStorage(API_COUNT_KEY, userId, 0);
     return 0;
   }
-  const count = localStorage.getItem(API_COUNT_KEY);
-  return count ? parseInt(count, 10) : 0;
+  return loadFromStorage(API_COUNT_KEY, userId, 0);
 }
 
-function incrementApiCount() {
+function incrementApiCount(userId: string | null) {
   if (typeof window === 'undefined') return;
-  const count = getApiCountFromStorage();
-  localStorage.setItem(API_COUNT_KEY, String(count + 1));
+  const count = getApiCountFromStorage(userId);
+  saveToStorage(API_COUNT_KEY, userId, count + 1);
 }
 
 export default function Home() {
+  const { user, logout, isLoading: authLoading } = useAuth();
+
   // Hydration 修复：客户端渲染标记
   const [isClient, setIsClient] = useState(false);
 
@@ -103,6 +88,9 @@ export default function Home() {
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
   const [apiCount, setApiCount] = useState(0);
 
+  // Get current user ID
+  const userId = getUserId();
+
   // Load profile and history
   useEffect(() => {
     setIsClient(true);
@@ -112,9 +100,9 @@ export default function Home() {
       setExplorerName(savedProfile.name);
       setAge(savedProfile.age as Age);
     }
-    setHistory(loadHistory());
-    setApiCount(getApiCountFromStorage());
-  }, []);
+    setHistory(loadHistory(userId));
+    setApiCount(getApiCountFromStorage(userId));
+  }, [userId]);
 
   // Handle profile completion
   const handleProfileComplete = (newProfile: ExplorerProfile) => {
@@ -153,7 +141,7 @@ export default function Home() {
     console.log('CacheKey:', cacheKey);
 
     if (!forceGenerate) {
-      const cached = loadCachedStory(cacheKey);
+      const cached = loadUserCachedStory(cacheKey, userId);
       if (cached) {
         console.log('✓ Using cached story');
         setCurrentStory(cached.story);
@@ -167,7 +155,7 @@ export default function Home() {
         };
         const newHistory = [newHistoryItem, ...history].slice(0, 3);
         setHistory(newHistory);
-        saveHistory(newHistory);
+        saveHistory(newHistory, userId);
         return;
       }
       console.log('✗ Cache miss');
@@ -175,7 +163,7 @@ export default function Home() {
       console.log('✗ Force generate, skipping cache');
     }
 
-    const currentCount = getApiCountFromStorage();
+    const currentCount = getApiCountFromStorage(userId);
     if (currentCount >= 100) {
       setError('今日API调用次数已用完（每天100次），请查看历史记录或明天再来！');
       return;
@@ -215,9 +203,9 @@ export default function Home() {
         timestamp: Date.now(),
         params: { age: targetAge, topic: targetTopic, minutes: targetMinutes },
       };
-      localStorage.setItem(CACHE_PREFIX + cacheKey, JSON.stringify(cachedStory));
+      saveUserCachedStory(cachedStory, userId);
 
-      incrementApiCount();
+      incrementApiCount(userId);
       setApiCount(prev => prev + 1);
 
       console.log('>>> Setting current story:', story.title);
@@ -233,7 +221,7 @@ export default function Home() {
       };
       const newHistory = [newHistoryItem, ...history].slice(0, 3);
       setHistory(newHistory);
-      saveHistory(newHistory);
+      saveHistory(newHistory, userId);
 
       console.log('✓ Story generated:', story.title);
     } catch (err) {
@@ -252,7 +240,7 @@ export default function Home() {
   };
 
   const handleHistorySelect = (item: HistoryItem) => {
-    const cached = loadCachedStory(item.key);
+    const cached = loadUserCachedStory(item.key, userId);
     if (cached) {
       setCurrentStory(cached.story);
       setMode(cached.mode);
@@ -264,7 +252,7 @@ export default function Home() {
   };
 
   // 非客户端时返回占位符
-  if (!isClient) {
+  if (!isClient || authLoading) {
     return (
       <>
         <CosmicVoid />
@@ -305,6 +293,8 @@ export default function Home() {
         history={history}
         initialAge={age}
         initialMode={mode}
+        user={user}
+        onLogout={logout}
       />
     </>
   );
