@@ -41,8 +41,12 @@ export function PinyinText({ text, className = '' }: PinyinTextProps) {
         </span>
       );
     } else {
-      // All other characters: punctuation, spaces, symbols - render as plain text
-      elements.push(char);
+      // All other characters: punctuation, spaces, symbols
+      elements.push(
+        <span key={key++} className="pinyin-space">
+          {char}
+        </span>
+      );
     }
     i++;
   }
