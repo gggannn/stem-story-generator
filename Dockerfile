@@ -1,23 +1,22 @@
 # ============================================
 # Stage 1: Dependencies
 # ============================================
-FROM node:23-alpine AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:23-slim AS deps
 
 WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm ci --only=production && \
+# Install dependencies (include devDependencies needed for build)
+RUN npm ci && \
     npm cache clean --force
 
 
 # ============================================
 # Stage 2: Builder
 # ============================================
-FROM node:23-alpine AS builder
+FROM node:23-slim AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -37,18 +36,19 @@ RUN npm prune --production
 # ============================================
 # Stage 3: Runner (Production)
 # ============================================
-FROM node:23-alpine AS runner
+FROM node:23-slim AS runner
 WORKDIR /app
 
-# Install wget for health checks
-RUN apk add --no-cache wget
+# Install wget for health checks and dumb-init for proper signal handling
+RUN apt-get update && apt-get install -y --no-install-recommends wget dumb-init && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
 
 # Copy necessary files from builder
 COPY --from=builder /app/public ./public
@@ -65,5 +65,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the application
+# Start the application with dumb-init
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "server.js"]
