@@ -78,7 +78,7 @@ export default function Home() {
 
   const [mode, setMode] = useState<StoryMode>('bedtime');
   const [age, setAge] = useState<Age>(8);
-  const [topic, setTopic] = useState<Topic>('airplane');
+  const [topic, setTopic] = useState<Topic>('solar_system');
   const [minutes, setMinutes] = useState<Duration>(10);
   const [explorerName, setExplorerName] = useState('');
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -232,7 +232,7 @@ export default function Home() {
   };
 
   const handleGenerate = () => {
-    generateStory(topic, age, mode, minutes, explorerName, false);
+    generateStory(topic, age, mode, minutes, explorerName, true);
   };
 
   const handleRefresh = () => {

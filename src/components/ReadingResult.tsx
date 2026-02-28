@@ -236,7 +236,8 @@ export function ReadingResult({ story, onBack, onRegenerate, isLoading }: Readin
           letter-spacing: 0;
         }
         /* Punctuation and spaces - align with bottom of characters */
-        .pinyin-space {
+        .pinyin-space,
+        .pinyin-punct {
           display: inline;
           vertical-align: bottom;
           line-height: 1;

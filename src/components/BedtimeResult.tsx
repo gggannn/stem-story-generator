@@ -11,9 +11,14 @@ interface BedtimeResultProps {
 }
 
 export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: BedtimeResultProps) {
+  // Handle both new format (body/recap/parent_tip) and old cached format (story/review/interaction)
+  const storyBody = (story as any).body || (story as any).story || [];
+  const storyRecap = (story as any).recap || (story as any).review || [];
+  const storyParentTip = (story as any).parent_tip || (story as any).interaction || '';
+
   const handleSpeak = () => {
     if ('speechSynthesis' in window) {
-      const text = `${story.title}。${story.body.join('。')}`;
+      const text = `${story.title}。${storyBody.join('。')}`;
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'zh-CN';
       utterance.rate = 0.8;
@@ -50,7 +55,7 @@ export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: Bedtim
 
           {/* Story Body */}
           <div className="space-y-4 mb-8">
-            {story.body.map((paragraph, index) => (
+            {storyBody.map((paragraph: string, index: number) => (
               <p key={index} className="text-slate-300 leading-relaxed text-lg">
                 {paragraph}
               </p>
@@ -61,7 +66,7 @@ export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: Bedtim
           <div className="bg-indigo-500/10 rounded-2xl p-5 mb-6 border border-indigo-500/30">
             <h3 className="font-semibold text-indigo-400 mb-3">🤔 想想看</h3>
             <ul className="space-y-2">
-              {story.recap.map((question, index) => (
+              {storyRecap.map((question: string, index: number) => (
                 <li key={index} className="text-slate-300">
                   {index + 1}. {question}
                 </li>
@@ -72,7 +77,7 @@ export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: Bedtim
           {/* Parent Tip */}
           <div className="bg-pink-500/10 rounded-2xl p-5 mb-6 border border-pink-500/30">
             <h3 className="font-semibold text-pink-400 mb-2">👨‍👩‍👧 亲子互动</h3>
-            <p className="text-slate-300">{story.parent_tip}</p>
+            <p className="text-slate-300">{storyParentTip}</p>
           </div>
 
           {/* Source (folded) */}
