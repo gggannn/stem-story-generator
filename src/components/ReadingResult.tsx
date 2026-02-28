@@ -238,7 +238,7 @@ export function ReadingResult({ story, onBack, onRegenerate, isLoading }: Readin
         /* Punctuation and spaces - align with bottom of characters */
         .pinyin-space {
           display: inline;
-          vertical-align: baseline;
+          vertical-align: bottom;
           line-height: 1;
         }
         /* Increase line height for paragraphs */
