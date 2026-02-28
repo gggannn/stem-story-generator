@@ -1586,7 +1586,7 @@ export function ThemeExplorer({ selectedTopic, onTopicChange }: ThemeExplorerPro
   const currentCategory = CATEGORIES.find((c) => c.id === selectedCategory);
 
   return (
-    <div className="relative w-full h-[550px] rounded-2xl overflow-hidden border border-slate-800/60 shadow-2xl">
+    <div className="relative z-0 w-full h-[550px] rounded-2xl overflow-hidden border border-slate-800/60 shadow-2xl">
       <Canvas
         camera={{ position: [0, 0, 8], fov: 48 }}
         style={{ background: 'radial-gradient(ellipse at center, #0d0d1a 0%, #050508 100%)' }}

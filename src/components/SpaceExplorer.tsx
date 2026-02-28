@@ -72,7 +72,7 @@ export function SpaceExplorer({
   const [age, setAge] = useState<Age>(initialAge || (profile.age as Age) || 8);
   const [mode, setMode] = useState<StoryMode>(initialMode || 'bedtime');
   const [minutes, setMinutes] = useState<Duration>(10);
-  const [selectedTopic, setSelectedTopic] = useState<Topic>('dinosaur');
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('正在准备魔法...');
   const [error, setError] = useState<string | null>(null);

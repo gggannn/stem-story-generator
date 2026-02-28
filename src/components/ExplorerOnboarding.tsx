@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { getUserId } from '@/lib/storage';
 
 interface ExplorerProfile {
@@ -358,6 +359,11 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
   const [age, setAge] = useState(profile.age);
   const [avatar, setAvatar] = useState(profile.avatar || AVATARS[0].id);
   const [isSaving, setIsSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -379,8 +385,11 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
     }, 500);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  // Use Portal to render at document.body level to avoid z-index conflicts with 3D Canvas
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
@@ -388,7 +397,7 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
       />
 
       {/* Modal */}
-      <div className="relative bg-slate-900 border border-cyan-500/30 rounded-2xl p-6 w-full max-w-sm">
+      <div className="relative z-[10000] bg-slate-900 border border-cyan-500/30 rounded-2xl p-6 w-full max-w-sm">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-mono text-lg text-cyan-400 flex items-center gap-2">
             <span className="text-slate-500">◆</span>
@@ -470,7 +479,8 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
