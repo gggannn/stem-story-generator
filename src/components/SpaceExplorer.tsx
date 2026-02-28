@@ -3,13 +3,29 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeDomain, Topic, Age, StoryMode, Duration, HistoryItem, CachedStory, Story } from '@/types';
 import { themeDomains, getTopicFromSubTheme } from '@/config/theme-config';
-import { AgeCapsule } from '@/components/AgeCapsule';
 import { ModeToggle } from '@/components/ModeToggle';
 import { DurationCapsule } from '@/components/DurationCapsule';
 import { HistoryList } from '@/components/HistoryList';
 import { ProfileEditor, loadProfile } from '@/components/ExplorerOnboarding';
+import { ThemeExplorer } from '@/components/ThemeExplorer';
 import type { ExplorerProfile } from '@/components/ExplorerOnboarding';
 import { Sparkles, RefreshCw, Loader2, Rocket, ChevronDown, ChevronRight, X } from 'lucide-react';
+
+// STEM-themed avatars (same as in ExplorerOnboarding)
+const AVATARS = [
+  { id: 'astronaut', emoji: '🧑‍🚀', name: '宇航员', gradient: 'from-blue-500 to-purple-600' },
+  { id: 'scientist', emoji: '🧪', name: '小科学家', gradient: 'from-green-500 to-teal-600' },
+  { id: 'robot', emoji: '🤖', name: '机器人', gradient: 'from-slate-500 to-slate-700' },
+  { id: 'inventor', emoji: '🔬', name: '发明家', gradient: 'from-amber-500 to-orange-600' },
+  { id: 'alien', emoji: '👽', name: '外星探险家', gradient: 'from-emerald-500 to-green-600' },
+  { id: 'dino', emoji: '🦕', name: '恐龙博士', gradient: 'from-orange-500 to-red-600' },
+  { id: 'ocean', emoji: '🐙', name: '海洋探险家', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'star', emoji: '⭐', name: '星星收藏家', gradient: 'from-yellow-500 to-amber-600' },
+  { id: 'rocket', emoji: '🚀', name: '火箭驾驶员', gradient: 'from-red-500 to-pink-600' },
+  { id: 'rocket_girl', emoji: '👩‍🚀', name: '女航天员', gradient: 'from-violet-500 to-purple-600' },
+  { id: 'dragon', emoji: '🐉', name: '龙骑士', gradient: 'from-rose-500 to-red-600' },
+  { id: 'super', emoji: '🦸', name: '科学超人', gradient: 'from-sky-500 to-blue-600' },
+];
 
 // Loading messages
 const loadingMessages = [
@@ -85,11 +101,15 @@ export function SpaceExplorer({
   const [age, setAge] = useState<Age>(initialAge || (profile.age as Age) || 8);
   const [mode, setMode] = useState<StoryMode>(initialMode || 'bedtime');
   const [minutes, setMinutes] = useState<Duration>(10);
+  const [selectedTopic, setSelectedTopic] = useState<Topic>('dinosaur');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('正在准备魔法...');
   const [error, setError] = useState<string | null>(null);
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [localHistory, setLocalHistory] = useState<HistoryItem[]>(history);
+
+  // Get current avatar from profile
+  const currentAvatar = AVATARS.find(a => a.id === profile.avatar) || AVATARS[0];
 
   // Update local history when prop changes
   useEffect(() => {
@@ -211,7 +231,7 @@ export function SpaceExplorer({
       return;
     }
 
-    generateStory(topic, age, mode, minutes, false);
+    generateStory(topic, age, mode, minutes, true);
   };
 
   const handleHistorySelect = (item: HistoryItem) => {
@@ -229,29 +249,81 @@ export function SpaceExplorer({
   return (
     <div className="min-h-screen py-6 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Header with Cool Profile Display */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="text-2xl">🚀</div>
             <h1 className="text-xl font-bold text-slate-200">STEM 宇宙探索器</h1>
           </div>
-          <button
-            onClick={() => setShowProfileEditor(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"
-          >
-            <span className="text-lg">👤</span>
-            <span className="font-medium">{profile.name}</span>
-          </button>
         </div>
+
+        {/* Cool Profile Badge - Click to edit */}
+        <button
+          onClick={() => setShowProfileEditor(true)}
+          className="w-full group mb-6 relative"
+        >
+          {/* Animated gradient border */}
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-2xl opacity-75 group-hover:opacity-100 transition-opacity blur" />
+
+          {/* Main card */}
+          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50">
+            <div className="flex items-center justify-between">
+              {/* Avatar & Name */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${currentAvatar.gradient} flex items-center justify-center text-2xl shadow-lg`}>
+                    {currentAvatar.emoji}
+                  </div>
+                  {/* Animated ring */}
+                  <div className="absolute inset-0 rounded-full border-2 border-cyan-400/50 animate-ping" />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider">探险家</p>
+                  <p className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
+                    {profile.name}
+                    <span className="ml-2 text-xs text-slate-500 group-hover:hidden">点击修改</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Age Badge */}
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider">年龄</p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                    {age} 岁
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                  🎂
+                </div>
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">⭐</span>
+                  <span className="text-sm text-slate-400">探索次数: <span className="text-cyan-400 font-semibold">{localHistory.length}</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🏆</span>
+                  <span className="text-sm text-slate-400">身份: <span className="text-purple-400 font-semibold">{currentAvatar.name}</span></span>
+                </div>
+              </div>
+              <div className="text-xs text-slate-500 flex items-center gap-1 group-hover:text-cyan-400 transition-colors">
+                <span>点击修改资料</span>
+                <span>→</span>
+              </div>
+            </div>
+          </div>
+        </button>
 
         {/* Quick Settings Bar */}
         <div className="bg-slate-900/60 backdrop-blur-sm rounded-xl p-4 border border-slate-800 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div>
-                <label className="text-xs text-slate-500 block mb-1">探险者年龄</label>
-                <AgeCapsule selected={age} onChange={setAge} compact />
-              </div>
               <div>
                 <label className="text-xs text-slate-500 block mb-1">探索模式</label>
                 <ModeToggle mode={mode} onChange={setMode} compact />
@@ -281,41 +353,30 @@ export function SpaceExplorer({
           </div>
         )}
 
-        {/* Theme Domains Grid */}
+        {/* Theme Explorer - 3D Cosmic Neural Bloom */}
         <div className="mb-6">
           <h2 className="text-sm font-semibold text-slate-400 mb-3 flex items-center gap-2">
             <span className="text-cyan-400">✦</span> 选择探索领域
           </h2>
-          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3">
-            {themeDomains.map((domain) => (
-              <button
-                key={domain.id}
-                onClick={() => handleDomainClick(domain)}
-                className={`
-                  relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-300
-                  ${selectedDomain?.id === domain.id
-                    ? 'bg-slate-800/80 border-2 scale-105'
-                    : 'bg-slate-900/50 border border-slate-800 hover:bg-slate-800/50 hover:border-slate-700 hover:scale-102'
-                  }
-                `}
-                style={{
-                  boxShadow: selectedDomain?.id === domain.id
-                    ? `0 0 20px ${domain.color}40`
-                    : 'none',
-                  borderColor: selectedDomain?.id === domain.id ? domain.color : undefined,
-                }}
-              >
-                <span className="text-2xl mb-1">{domain.icon}</span>
-                <span className="text-xs text-slate-300 font-medium">{domain.name}</span>
-                {selectedDomain?.id === domain.id && (
-                  <div
-                    className="absolute inset-0 rounded-xl opacity-20"
-                    style={{ background: domain.color }}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
+          <ThemeExplorer
+            selectedTopic={selectedTopic}
+            onTopicChange={(topic) => {
+              setSelectedTopic(topic);
+              // Find the domain that contains this topic
+              for (const domain of themeDomains) {
+                const subTheme = domain.subThemes.find(st => st.topics.includes(topic));
+                if (subTheme) {
+                  setSelectedDomain(domain);
+                  setExpandedSubTheme(subTheme.id);
+                  // Auto-generate story when topic is selected
+                  setTimeout(() => {
+                    generateStory(topic, age, mode, minutes, true);
+                  }, 500);
+                  break;
+                }
+              }
+            }}
+          />
         </div>
 
         {/* Sub Themes - Expanded View */}

@@ -5,8 +5,25 @@ import React, { useState, useEffect, useRef } from 'react';
 interface ExplorerProfile {
   name: string;
   age: number;
+  avatar: string;
   createdAt: number;
 }
+
+// STEM-themed avatars for kids
+const AVATARS = [
+  { id: 'astronaut', emoji: '🧑‍🚀', name: '宇航员', gradient: 'from-blue-500 to-purple-600' },
+  { id: 'scientist', emoji: '🧪', name: '小科学家', gradient: 'from-green-500 to-teal-600' },
+  { id: 'robot', emoji: '🤖', name: '机器人', gradient: 'from-slate-500 to-slate-700' },
+  { id: 'inventor', emoji: '🔬', name: '发明家', gradient: 'from-amber-500 to-orange-600' },
+  { id: 'alien', emoji: '👽', name: '外星探险家', gradient: 'from-emerald-500 to-green-600' },
+  { id: 'dino', emoji: '🦕', name: '恐龙博士', gradient: 'from-orange-500 to-red-600' },
+  { id: 'ocean', emoji: '🐙', name: '海洋探险家', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'star', emoji: '⭐', name: '星星收藏家', gradient: 'from-yellow-500 to-amber-600' },
+  { id: 'rocket', emoji: '🚀', name: '火箭驾驶员', gradient: 'from-red-500 to-pink-600' },
+  { id: 'rocket_girl', emoji: '👩‍🚀', name: '女航天员', gradient: 'from-violet-500 to-purple-600' },
+  { id: 'dragon', emoji: '🐉', name: '龙骑士', gradient: 'from-rose-500 to-red-600' },
+  { id: 'super', emoji: '🦸', name: '科学超人', gradient: 'from-sky-500 to-blue-600' },
+];
 
 const PROFILE_KEY = 'stem_explorer_profile';
 
@@ -62,6 +79,7 @@ function GlitchText({ text, className = '' }: { text: string; className?: string
 export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
   const [name, setName] = useState('');
   const [age, setAge] = useState(8);
+  const [avatar, setAvatar] = useState(AVATARS[0].id);
   const [step, setStep] = useState(0);
   const [isScanning, setIsScanning] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -86,6 +104,7 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
     const profile: ExplorerProfile = {
       name: name.trim(),
       age,
+      avatar,
       createdAt: Date.now(),
     };
     saveProfile(profile);
@@ -200,6 +219,36 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
                 </div>
               </div>
 
+              {/* Avatar selector */}
+              <div>
+                <label className="block font-mono text-sm text-cyan-400 mb-2">
+                  <span className="text-slate-500">03.</span> 选择你的身份
+                </label>
+                <div className="grid grid-cols-4 gap-3">
+                  {AVATARS.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => setAvatar(a.id)}
+                      className={`
+                        flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all
+                        ${avatar === a.id
+                          ? 'bg-slate-800 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]'
+                          : 'bg-slate-950/50 border-slate-700 hover:border-slate-600'
+                        }
+                      `}
+                    >
+                      <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center text-2xl shadow-lg mb-2`}>
+                        {a.emoji}
+                      </div>
+                      <span className={`text-xs font-medium ${avatar === a.id ? 'text-cyan-400' : 'text-slate-400'}`}>
+                        {a.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Submit */}
               <button
                 type="submit"
@@ -302,6 +351,7 @@ interface ProfileEditorProps {
 export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) {
   const [name, setName] = useState(profile.name);
   const [age, setAge] = useState(profile.age);
+  const [avatar, setAvatar] = useState(profile.avatar || AVATARS[0].id);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -312,6 +362,7 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
     const updatedProfile: ExplorerProfile = {
       name: name.trim(),
       age,
+      avatar,
       createdAt: profile.createdAt,
     };
     saveProfile(updatedProfile);
@@ -373,6 +424,33 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
                   }`}
                 >
                   {a}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-mono text-xs text-slate-500 mb-2">选择身份</label>
+            <div className="grid grid-cols-4 gap-2">
+              {AVATARS.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setAvatar(a.id)}
+                  className={`
+                    flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all
+                    ${avatar === a.id
+                      ? 'bg-slate-800 border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]'
+                      : 'bg-slate-950 border-slate-700 hover:border-slate-600'
+                    }
+                  `}
+                >
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${a.gradient} flex items-center justify-center text-xl shadow-md mb-1`}>
+                    {a.emoji}
+                  </div>
+                  <span className={`text-[10px] font-medium ${avatar === a.id ? 'text-cyan-400' : 'text-slate-400'}`}>
+                    {a.name}
+                  </span>
                 </button>
               ))}
             </div>

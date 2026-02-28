@@ -2,7 +2,34 @@ export type StoryMode = 'bedtime' | 'reading';
 
 export type Age = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-export type Topic = 'dinosaur' | 'space' | 'airplane' | 'insect' | 'robot' | 'ocean' | 'forest' | 'animal';
+export type ThemeCategory = 'science' | 'technology' | 'engineering' | 'earth' | 'mathematics';
+
+export type Topic =
+  // Science - 科学探索 (7 topics)
+  | 'dinosaur'
+  | 'solar_system'
+  | 'animals'
+  | 'insects'
+  | 'ocean'
+  | 'human_body'
+  | 'plants'
+  // Technology - 技术发明 (5 topics)
+  | 'robot'
+  | 'airplane'
+  | 'cars_trains'
+  | 'programming'
+  | 'internet'
+  // Engineering - 工程世界 (3 topics)
+  | 'architecture'
+  | 'machines'
+  | 'energy'
+  // Earth - 地球奥秘 (3 topics)
+  | 'forest'
+  | 'mountains'
+  | 'weather'
+  // Mathematics - 数学思维 (2 topics)
+  | 'shapes'
+  | 'logic';
 
 export type Duration = 5 | 8 | 10 | 12;
 
@@ -83,6 +110,23 @@ export interface HistoryItem {
 }
 
 // Theme exploration types
+export interface ThemeCategoryInfo {
+  id: ThemeCategory;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+}
+
+export interface TopicInfo {
+  id: Topic;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+}
+
+// Legacy type for SpaceExplorer (kept for backward compatibility)
 export interface SubTheme {
   id: string;
   name: string;

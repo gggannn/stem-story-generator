@@ -9,14 +9,31 @@ interface PasswordDisplayProps {
 }
 
 const topicLabels: Record<Topic, string> = {
-  dinosaur: '恐龙',
-  space: '宇宙',
-  airplane: '飞机',
-  insect: '昆虫',
-  robot: '机器人',
-  ocean: '海洋',
-  forest: '森林',
-  animal: '动物',
+  // Science - 科学探索
+  dinosaur: '恐龙王国',
+  solar_system: '宇宙奥秘',
+  animals: '动物世界',
+  insects: '昆虫世界',
+  ocean: '海洋深处',
+  human_body: '人体秘密',
+  plants: '植物王国',
+  // Technology - 技术发明
+  robot: '机器人世界',
+  airplane: '飞机与飞行',
+  cars_trains: '火车与汽车',
+  programming: '编程初体验',
+  internet: '互联网探索',
+  // Engineering - 工程世界
+  architecture: '建筑工程',
+  machines: '机械装置',
+  energy: '能源工程',
+  // Earth - 地球奥秘
+  forest: '森林秘境',
+  mountains: '山川河流',
+  weather: '天气变化',
+  // Mathematics - 数学思维
+  shapes: '形状与空间',
+  logic: '逻辑与谜题',
 };
 
 const modeLabels: Record<StoryMode, { main: string; desc: string }> = {
