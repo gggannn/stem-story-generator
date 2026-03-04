@@ -58,7 +58,7 @@ src/
 ## Key Features Implemented
 
 - **Age Capsules**: 5-12 years old
-- **Topic Capsules**: 8 STEM themes (恐龙, 宇宙, 飞机, 昆虫, 机器人, 海洋, 森林, 动物)
+- **Topic Capsules**: 4 STEM themes (恐龙, 宇宙, 飞机, 昆虫, 机器人, 海洋, 森林, 动物)
 - **Duration Capsules**: 5/8/10/12 minutes (hidden in reading mode)
 - **Mode Toggle**: 睡前听 (bedtime) / 阅读打印 (reading)
 - **Dynamic Password Display**: Shows current parameter combination

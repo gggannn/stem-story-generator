@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getSubTopicsFromTopic } from '@/config/theme-config';
 
 // Types for request/response
 interface GenerateRequest {
@@ -58,19 +59,26 @@ interface ReadingResponse {
   source?: string;
 }
 
-// Topic mapping for Chinese (20 topics as per plan)
+// Topic mapping for Chinese (expanded with sub-topics)
 const topicMap: Record<string, string> = {
-  // Science - 科学探索
+  // Science - 科学探索 (二级/Topic)
   dinosaur: '恐龙王国 - 远古巨兽的秘密',
-  solar_system: '宇宙奥秘 - 星星和太空',
+  space: '宇宙奥秘 - 星星和太空',
+  animal: '动物世界 - 野生动物朋友',
   animals: '动物世界 - 野生动物朋友',
+  insect: '昆虫世界 - 小小生命',
   insects: '昆虫世界 - 小小生命',
   ocean: '海洋深处 - 海底探险',
   human_body: '人体秘密 - 我们的身体',
   plants: '植物王国 - 绿色生命',
+  // Legacy mappings for backward compatibility
+  solar_system: '宇宙奥秘 - 星星和太空',
   // Technology - 技术发明
   robot: '机器人世界 - 机器朋友',
   airplane: '飞机与飞行 - 天空之旅',
+  // Airplane sub-topics
+  flight: '飞行原理 - 飞机为什么能飞',
+  spacecraft: '航天器 - 探索太空的工具',
   cars_trains: '火车与汽车 - 陆地交通',
   programming: '编程初体验 - 电脑小天才',
   internet: '互联网探索 - 网络世界',
@@ -85,11 +93,62 @@ const topicMap: Record<string, string> = {
   // Mathematics - 数学思维
   shapes: '形状与空间 - 图形世界',
   logic: '逻辑与谜题 - 聪明大挑战',
+
+  // Space sub-topics
+  planets: '太阳系行星 - 探索八大行星的奥秘',
+  stars: '恒星与星座 - 星星的故事',
+  astronaut: '宇航员 - 太空探险家',
+  blackhole: '黑洞与宇宙 - 神秘宇宙现象',
+
+  // Ocean sub-topics
+  sea_creatures: '海洋生物 - 海底居民大集合',
+  coral: '珊瑚礁 - 海底花园',
+  deep_sea: '深海探险 - 神秘海底世界',
+
+  // Dinosaur sub-topics
+  dinosaur_types: '恐龙种类 - 认识不同的恐龙',
+  dinosaur_era: '恐龙时代 - 远古地球的故事',
+  fossil: '化石与考古 - 恐龙化石的秘密',
+
+  // Robot sub-topics
+  robot_basics: '机器人基础 - 认识机器人',
+  ai: '人工智能 - 会思考的机器',
+  future_tech: '未来科技 - 科技发展方向',
+
+  // Forest sub-topics
+  forest_life: '森林生物 - 森林里的朋友们',
+  forest_plants: '植物世界 - 树的秘密',
+  ecosystem: '生态系统 - 大自然的平衡',
+
+  // Insect sub-topics
+  insect_types: '昆虫种类 - 认识各种昆虫',
+  butterfly: '蝴蝶与蛾 - 飞舞的彩虹',
+  bee_ant: '蜜蜂与蚂蚁 - 勤快的小工匠',
+
+  // Animal sub-topics
+  wild_animals: '野生动物 - 野外生存高手',
+  pets: '宠物世界 - 人类的好朋友',
+  extinct_animals: '灭绝动物 - 消失的物种',
 };
+
+// Story angle variants to add diversity
+const storyAngles = [
+  "从探险家发现问题的角度 - 主角偶然发现一个奇怪的现象，引发好奇",
+  "从动手做实验的角度 - 主角通过动手操作来验证想法",
+  "从仔细观察的角度 - 主角通过细心观察发现秘密",
+  "从解决一个具体问题的角度 - 主角遇到一个麻烦，需要用科学知识解决",
+  "从对比发现的角度 - 主角通过对比不同事物发现规律",
+];
 
 // Build system prompt based on mode
 function buildSystemPrompt(req: GenerateRequest): string {
-  const topic = topicMap[req.topic] || req.topic;
+  // Get random subTopic for story variation (三级/隐藏主题)
+  const subTopics = getSubTopicsFromTopic(req.topic);
+  const selectedSubTopic = subTopics.length > 0
+    ? subTopics[Math.floor(Math.random() * subTopics.length)]
+    : req.topic;
+
+  const topic = topicMap[selectedSubTopic] || topicMap[req.topic] || req.topic;
   const levelDesc = {
     L1: '简单具象，适合5-6岁孩子理解，句子短（每句不超过10个字），词汇简单',
     L2: '逻辑关联，适合7-9岁孩子理解，句子中等长度',
@@ -107,6 +166,9 @@ function buildSystemPrompt(req: GenerateRequest): string {
 - 主角必须亲自**动手做、亲眼看、亲身体验**，不能只是"听说"或"看到"
 `;
 
+  // Random story angle for diversity
+  const randomAngle = storyAngles[Math.floor(Math.random() * storyAngles.length)];
+
   if (req.mode === 'bedtime') {
     // 根据年龄确定句子长度限制
     const sentenceLimit = req.age <= 6 ? 8 : req.age <= 9 ? 12 : 15;
@@ -117,6 +179,11 @@ function buildSystemPrompt(req: GenerateRequest): string {
 # Explorer Identity
 - **主角名字**：${finalName}
 - **叙事视角**：让${finalName}直接作为探险家。禁止描写"伟大的科学家"。主角需拥有自尊、生存、好奇的小角色视角。
+
+## 名字使用规范（!!!重要!!!）
+- 第一次出现主角名字时用"${finalName}"，之后用"他"指代
+- 每段话名字最多出现1次，尽量用"他"代替
+- 避免连续两句话都出现名字
 
 # Age-Specific Adaptation (年龄分级调节器)
 根据用户输入的 ${req.age} 岁，自动切换叙事深度：
@@ -316,7 +383,10 @@ function buildSystemPrompt(req: GenerateRequest): string {
 }
 
 # Topic
-请围绕「${topic}」主题，创作一个有趣的睡前科学探险故事`;
+请围绕「${topic}」主题，创作一个有趣的睡前科学探险故事。
+
+## 这次故事的切入角度：${randomAngle}
+确保故事内容与这个角度紧密相关，不要泛泛而谈。`;
   } else {
     // 根据年龄确定句子长度限制
     const sentenceLimit = req.age <= 6 ? 10 : req.age <= 9 ? 14 : 18;
@@ -327,6 +397,11 @@ function buildSystemPrompt(req: GenerateRequest): string {
 # Explorer Identity
 - **主角名字**：${finalName}
 - **叙事视角**：让${finalName}直接作为探险家。禁止描写"伟大的科学家"。主角需拥有自尊、生存、好奇的小角色视角。
+
+## 名字使用规范（!!!重要!!!）
+- 第一次出现主角名字时用"${finalName}"，之后用"他"指代
+- 每段话名字最多出现1次，尽量用"他"代替
+- 避免连续两句话都出现名字
 
 # Age-Specific Adaptation (年龄分级调节器)
 根据用户输入的 ${req.age} 岁，自动切换叙事深度：
@@ -537,7 +612,10 @@ function buildSystemPrompt(req: GenerateRequest): string {
 }
 
 # Topic
-请围绕「${topic}」主题创作一篇适合打印的科普短文。确保每个小节有 2-3 个硬核科学事实！`;
+请围绕「${topic}」主题创作一篇适合打印的科普短文。确保每个小节有 2-3 个硬核科学事实！
+
+## 这次故事的切入角度：${randomAngle}
+确保内容与这个角度紧密相关，不要泛泛而谈。`;
   }
 }
 

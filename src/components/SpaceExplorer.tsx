@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ThemeDomain, Topic, Age, StoryMode, Duration, HistoryItem, CachedStory, Story, User } from '@/types';
-import { themeDomains, getTopicFromSubTheme } from '@/config/theme-config';
+import { themeDomains } from '@/config/theme-config';
 import { ModeToggle } from '@/components/ModeToggle';
 import { DurationCapsule } from '@/components/DurationCapsule';
 import { HistoryList } from '@/components/HistoryList';
@@ -196,12 +196,8 @@ export function SpaceExplorer({
   const handleGenerateFromSubTheme = (subThemeId: string) => {
     if (!selectedDomain) return;
 
-    const topic = getTopicFromSubTheme(selectedDomain.id, subThemeId);
-    if (!topic) {
-      setError('该主题暂无可用内容');
-      return;
-    }
-
+    // In new architecture, subThemeId IS the topic (二级)
+    const topic = subThemeId as Topic;
     generateStory(topic, age, mode, minutes, true);
   };
 
@@ -361,18 +357,20 @@ export function SpaceExplorer({
             onTopicChange={(topic) => {
               setSelectedTopic(topic);
               // Find the domain that contains this topic
+              let foundDomain = false;
               for (const domain of themeDomains) {
                 const subTheme = domain.subThemes.find(st => st.topics.includes(topic));
                 if (subTheme) {
                   setSelectedDomain(domain);
                   setExpandedSubTheme(subTheme.id);
-                  // Auto-generate story when topic is selected
-                  setTimeout(() => {
-                    generateStory(topic, age, mode, minutes, true);
-                  }, 500);
+                  foundDomain = true;
                   break;
                 }
               }
+              // Always auto-generate story when topic is selected (even if domain not found)
+              setTimeout(() => {
+                generateStory(topic, age, mode, minutes, true);
+              }, 500);
             }}
           />
           {!selectedTopic && (

@@ -225,7 +225,7 @@ export function ReadingResult({ story, onBack, onRegenerate, isLoading }: Readin
           line-height: 1;
         }
         .pinyin-char .pinyin {
-          font-size: 0.4em;
+          font-size: 0.6em;
           font-family: "Helvetica Neue", Arial, sans-serif;
           color: #64748b;
           font-weight: 500;
@@ -261,7 +261,7 @@ export function ReadingResult({ story, onBack, onRegenerate, isLoading }: Readin
           }
           .pinyin-char .pinyin {
             color: #333333 !important;
-            font-size: 0.65em !important;
+            font-size: 0.6em !important;
             font-family: Arial, sans-serif !important;
             font-weight: 600 !important;
           }

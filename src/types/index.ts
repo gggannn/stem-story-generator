@@ -2,7 +2,43 @@ export type StoryMode = 'bedtime' | 'reading';
 
 export type Age = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-export type Topic = 'dinosaur' | 'space' | 'airplane' | 'insect' | 'robot' | 'ocean' | 'forest' | 'animal';
+export type Topic =
+  // Visible Topics (二级)
+  | 'dinosaur' | 'space' | 'animal' | 'insect' | 'ocean' | 'human_body' | 'plants'
+  | 'robot' | 'airplane' | 'programming' | 'internet' | 'cars_trains'
+  | 'architecture' | 'machines' | 'energy'
+  | 'forest' | 'mountains' | 'weather'
+  | 'shapes' | 'logic'
+  // Science sub-topics (三级)
+  | 'dinosaur_types' | 'dinosaur_era' | 'fossil' | 'extinction_mystery'
+  | 'planets' | 'stars' | 'astronaut' | 'blackhole' | 'moon_landing' | 'aliens_search'
+  | 'wild_animals' | 'pets' | 'extinct_animals' | 'migration' | 'animal_senses'
+  | 'insect_types' | 'butterfly' | 'bee_ant' | 'mimicry' | 'beetle_armor'
+  | 'sea_creatures' | 'coral' | 'deep_sea' | 'ocean_currents' | 'marine_protection'
+  | 'skeleton' | 'digestion' | 'brain_power' | 'five_senses' | 'blood_travel' | 'DNA'
+  | 'photosynthesis' | 'seeds_travel' | 'carnivorous_plants' | 'giant_trees' | 'flowers'
+  // Technology sub-topics (三级)
+  | 'robot_basics' | 'ai' | 'future_tech' | 'bionic_robots' | 'robot_coding'
+  | 'flight' | 'spacecraft' | 'drones' | 'hot_air_balloons' | 'aerodynamics'
+  | 'algorithms' | 'coding_logic' | 'hardware' | 'game_design' | 'scratch_fun'
+  | 'world_wide_web' | 'cyber_safety' | 'social_media' | 'cloud_storage' | '5G_6G'
+  | 'electric_cars' | 'maglev_trains' | 'engine_work' | 'racing_cars' | 'smart_traffic'
+  // Engineering sub-topics (三级)
+  | 'skyscrapers' | 'bridges' | 'ancient_wonders' | 'eco_friendly_houses' | 'tunnels'
+  | 'simple_machines' | 'gears' | 'hydraulic_power' | 'clockwork' | 'factory_automation'
+  | 'solar_power' | 'wind_turbines' | 'electricity' | 'batteries' | 'nuclear_energy'
+  // Earth sub-topics (三级)
+  | 'forest_life' | 'forest_plants' | 'ecosystem' | 'rainforest' | 'seasonal_changes'
+  | 'volcanoes' | 'glaciers' | 'river_cycle' | 'caves' | 'plate_tectonics'
+  | 'clouds' | 'storms' | 'global_warming' | 'seasons' | 'rainbows' | 'natural_disasters'
+  // Math sub-topics (三级)
+  | '2D_3D_shapes' | 'symmetry' | 'geometry_in_nature' | 'architecture_math'
+  | 'sequences' | 'binary_code' | 'probability' | 'strategy_games' | 'paradoxes'
+  // Legacy (for backward compatibility)
+  | 'solar_system' | 'animals' | 'insects';
+
+// Theme categories for ThemeExplorer
+export type ThemeCategory = 'science' | 'technology' | 'engineering' | 'earth' | 'math';
 
 export type Duration = 5 | 8 | 10 | 12;
 
@@ -89,12 +125,18 @@ export interface SubTheme {
   topics: Topic[];
 }
 
+export type ParticleShape = 'atom' | 'pixel' | 'block' | 'drop' | 'crystal';
+
 export interface ThemeDomain {
   id: string;
   name: string;
   icon: string;
   color: string;
   subThemes: SubTheme[];
+  // Additional fields for ThemeExplorer visualization
+  particleColor?: string;
+  particleShape?: ParticleShape;
+  hasRing?: boolean;
 }
 
 // User authentication types
