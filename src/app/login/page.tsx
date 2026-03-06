@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { CosmicVoid } from '@/components/CosmicVoid';
 import { Rocket } from 'lucide-react';
+import SmsLoginForm from '@/components/SmsLoginForm';
 
 export default function LoginPage() {
-  const { login, user, isLoading } = useAuth();
+  const { login, loginWithSms, user, isLoading } = useAuth();
   const router = useRouter();
+  const [mode, setMode] = useState<'password' | 'sms'>('password');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,13 +30,16 @@ export default function LoginPage() {
 
     try {
       await login(username, password);
-      // After successful login, redirect to home
       router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : '登录失败');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSmsSuccess = () => {
+    router.push('/');
   };
 
   if (isLoading) {
@@ -76,46 +81,76 @@ export default function LoginPage() {
               <p className="text-slate-400">登录开始你的探索之旅</p>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm text-slate-400 mb-2">用户名</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
-                  placeholder="输入用户名"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-slate-400 mb-2">密码</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
-                  placeholder="输入密码"
-                  required
-                />
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-                  <p className="text-sm text-red-400">{error}</p>
-                </div>
-              )}
-
+            {/* Tab Switcher */}
+            <div className="flex gap-2 mb-6">
               <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                onClick={() => setMode('password')}
+                className={`flex-1 py-2 rounded-lg transition-colors ${
+                  mode === 'password'
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+                    : 'bg-slate-800/50 text-slate-400 border border-slate-700'
+                }`}
               >
-                {isSubmitting ? '登录中...' : '登录'}
+                密码登录
               </button>
-            </form>
+              <button
+                type="button"
+                onClick={() => setMode('sms')}
+                className={`flex-1 py-2 rounded-lg transition-colors ${
+                  mode === 'sms'
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+                    : 'bg-slate-800/50 text-slate-400 border border-slate-700'
+                }`}
+              >
+                验证码登录
+              </button>
+            </div>
+
+            {/* Forms */}
+            {mode === 'password' ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-slate-400 mb-2">用户名</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                    placeholder="输入用户名"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-400 mb-2">密码</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                    placeholder="输入密码"
+                    required
+                  />
+                </div>
+
+                {error && (
+                  <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+                    <p className="text-sm text-red-400">{error}</p>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? '登录中...' : '登录'}
+                </button>
+              </form>
+            ) : (
+              <SmsLoginForm onSuccess={handleSmsSuccess} />
+            )}
           </div>
 
           {/* Decorative footer */}

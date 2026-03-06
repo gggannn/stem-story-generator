@@ -45,6 +45,37 @@ export async function getUserByUsername(username: string): Promise<UserRecord | 
   return users.length > 0 ? mapDbUserToUserRecord(users[0]) : null;
 }
 
+export async function getUserByPhone(phone: string): Promise<User | null> {
+  const pool = getPool();
+  const [rows] = await pool.query(
+    'SELECT id, username, display_name, role, is_active, created_at, last_login_at FROM users WHERE phone = ? AND is_active = TRUE',
+    [phone]
+  );
+  const users = rows as any[];
+  return users.length > 0 ? mapDbUserToUser(users[0]) : null;
+}
+
+export async function createUserByPhone(phone: string): Promise<User> {
+  const pool = getPool();
+  const id = crypto.randomUUID();
+  const now = Date.now();
+
+  await pool.query(
+    'INSERT INTO users (id, username, phone, display_name, role, is_active, created_at) VALUES (?, ?, ?, ?, ?, TRUE, ?)',
+    [id, phone, phone, phone, 'user', now]
+  );
+
+  return {
+    id,
+    username: phone,
+    displayName: phone,
+    role: 'user',
+    isActive: true,
+    createdAt: now,
+    lastLoginAt: null,
+  };
+}
+
 export async function getUserById(id: string): Promise<User | null> {
   const pool = getPool();
   const [rows] = await pool.query(

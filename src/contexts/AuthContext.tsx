@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
+  loginWithSms: (phone: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -72,6 +73,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   };
 
+  const loginWithSms = async (phone: string, code: string) => {
+    const res = await fetch('/api/auth/sms/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, code }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || '登录失败');
+    }
+
+    const data = await res.json();
+    setUser(data.user);
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('current_user_id', data.user.id);
+    }
+
+    setIsLoading(false);
+  };
+
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
@@ -83,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, loginWithSms, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

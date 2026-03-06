@@ -6,6 +6,7 @@ import { getUserId } from '@/lib/storage';
 interface ExplorerProfile {
   name: string;
   age: number;
+  avatar?: string;
   createdAt: number;
 }
 

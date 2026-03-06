@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 // 阿里云语音合成配置
 const ALIYUN_CONFIG = {
@@ -33,6 +34,30 @@ let cachedToken: string | null = null;
 let tokenExpireTime: number = 0;
 
 /**
+ * 阿里云签名算法 HMAC-SHA1
+ */
+function computeSignature(parameters: Record<string, string>, accessKeySecret: string): string {
+  // 1. 排序参数名
+  const sortedParams = Object.keys(parameters).sort();
+
+  // 2. 构造规范化查询字符串
+  const canonicalizedQueryString = sortedParams
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(parameters[key])}`)
+    .join('&');
+
+  // 3. 构造待签名字符串
+  const stringToSign = `POST&${encodeURIComponent('/')}&${encodeURIComponent(canonicalizedQueryString)}`;
+
+  // 4. HMAC-SHA1 签名
+  const signature = crypto
+    .createHmac('sha1', accessKeySecret + '&')
+    .update(stringToSign, 'utf8')
+    .digest('base64');
+
+  return signature;
+}
+
+/**
  * 使用 AccessKey 获取访问 Token
  */
 async function getAccessToken(): Promise<string> {
@@ -41,34 +66,25 @@ async function getAccessToken(): Promise<string> {
     return cachedToken;
   }
 
-  const { accessKeyId, accessKeySecret, tokenUrl } = ALIYUN_CONFIG;
+  const { accessKeyId, accessKeySecret } = ALIYUN_CONFIG;
 
-  // 构建请求参数
-  const params = new URLSearchParams();
-  params.append('Action', 'CreateToken');
-  params.append('Version', '2019-02-28');
-  params.append('AccessKeyId', accessKeyId);
-  params.append('Format', 'JSON');
-  params.append('SignatureMethod', 'HMAC-SHA1');
-  params.append('Timestamp', new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'));
-  params.append('SignatureVersion', '1.0');
-  params.append('SignatureNonce', Math.random().toString(36).substring(2));
+  // 构建请求参数（按字母顺序排序）
+  const params: Record<string, string> = {
+    Action: 'CreateToken',
+    Version: '2019-02-28',
+    AccessKeyId: accessKeyId,
+    Format: 'JSON',
+    SignatureMethod: 'HMAC-SHA1',
+    Timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    SignatureVersion: '1.0',
+    SignatureNonce: Math.random().toString(36).substring(2, 15),
+  };
 
-  // 计算签名（简单版本，使用 URL 编码）
-  const stringToSign = `POST&${encodeURIComponent(tokenUrl)}&${encodeURIComponent(params.toString())}`;
-
-  // 使用 crypto 计算 HMAC-SHA1
-  const encoder = new TextEncoder();
-  const key = encoder.encode(accessKeySecret + '&');
-  const data = encoder.encode(stringToSign);
-
-  // 简化的签名计算（实际应使用阿里云 SDK）
-  const signature = Buffer.from(stringToSign).toString('base64');
-
-  params.append('Signature', signature);
+  // 计算签名
+  params.Signature = computeSignature(params, accessKeySecret);
 
   try {
-    const response = await fetch(`https://${tokenUrl}?${params.toString()}`, {
+    const response = await fetch(`https://nls-meta.cn-shanghai.aliyuncs.com/?${new URLSearchParams(params).toString()}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -82,7 +98,7 @@ async function getAccessToken(): Promise<string> {
       // 提前5分钟过期
       tokenExpireTime = Date.now() + (data.Token.ExpireTime - 300) * 1000;
       console.log('>>> Got new token:', cachedToken?.substring(0, 10) + '...');
-      return cachedToken;
+      return cachedToken!;
     }
 
     throw new Error('Failed to get token: ' + JSON.stringify(data));
