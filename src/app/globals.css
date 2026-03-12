@@ -20,9 +20,91 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: radial-gradient(circle at 50% 50%, #0a0a2a 0%, #000000 100%);
+  color: #ffffff;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .cosmic-void {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, #0a0a2a 0%, #000000 100%);
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: twinkle 3s infinite ease-in-out;
+  }
+
+  .nebula {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.15;
+    z-index: -1;
+    animation: float 20s infinite alternate ease-in-out;
+  }
+
+  .capsule-btn {
+    @apply px-4 py-2 rounded-full border border-white/20 transition-all duration-200 text-sm font-medium text-white;
+  }
+
+  .capsule-btn-active {
+    @apply bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)];
+  }
+
+  .mode-btn {
+    @apply flex flex-col items-center justify-center p-6 rounded-2xl border border-white/10 transition-all duration-300 gap-3 text-white;
+  }
+
+  .mode-btn-purple {
+    @apply hover:border-purple-500/50 hover:bg-purple-500/5;
+  }
+
+  .mode-btn-purple-active {
+    @apply border-purple-500 bg-purple-500/10 shadow-[0_0_30px_rgba(168,85,247,0.3)];
+  }
+
+  .mode-btn-emerald {
+    @apply hover:border-emerald-500/50 hover:bg-emerald-500/5;
+  }
+
+  .mode-btn-emerald-active {
+    @apply border-emerald-500 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.3)];
+  }
+
+  .rocket-btn {
+    @apply flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-indigo-500/40 transition-all active:scale-95;
+  }
+
+  .no-print {
+    display: block;
+  }
+
+  .print-only {
+    display: none;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(50px, 50px) rotate(10deg); }
 }
 
 /* Print Styles for Reading Mode */
@@ -37,6 +119,14 @@ body {
     color: black !important;
     font-size: 12pt;
     line-height: 1.5;
+  }
+
+  .no-print, .cosmic-void, .star, .nebula {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
   }
 
   /* Hide all interactive elements */

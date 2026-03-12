@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { ReadingStory } from '@/types';
 import { ArrowLeft, Printer, RefreshCw, Loader2, BookOpen, Eye, EyeOff } from 'lucide-react';
 import { PinyinText } from './PinyinText';
@@ -27,7 +28,11 @@ export function ReadingResult({ story, onBack, onRegenerate, isLoading }: Readin
   return (
     <>
       <CosmicVoid />
-      <div className="min-h-screen py-8 px-4 print:bg-white print:p-0">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="min-h-screen py-8 px-4 print:bg-white print:p-0"
+      >
       <div className="max-w-2xl mx-auto print:max-w-none">
         {/* Header with back button - hidden in print */}
         <div className="flex items-center justify-between mb-6 print:hidden">
@@ -206,7 +211,6 @@ export function ReadingResult({ story, onBack, onRegenerate, isLoading }: Readin
             再来一篇
           </button>
         </div>
-      </div>
 
       {/* Ruby pinyin styles */}
       <style jsx global>{`
@@ -348,6 +352,7 @@ export function ReadingResult({ story, onBack, onRegenerate, isLoading }: Readin
         }
       `}</style>
       </div>
+      </motion.div>
     </>
   );
 }

@@ -61,8 +61,8 @@ export async function createUserByPhone(phone: string): Promise<User> {
   const now = Date.now();
 
   await pool.query(
-    'INSERT INTO users (id, username, phone, display_name, role, is_active, created_at) VALUES (?, ?, ?, ?, ?, TRUE, ?)',
-    [id, phone, phone, phone, 'user', now]
+    'INSERT INTO users (id, username, phone, password_hash, display_name, role, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, TRUE, ?)',
+    [id, phone, phone, '', phone, 'user', now]
   );
 
   return {

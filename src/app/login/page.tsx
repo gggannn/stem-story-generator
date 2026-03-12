@@ -71,14 +71,14 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           {/* Login Card */}
-          <div className="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-cyan-500/30 p-8">
+          <div className="bg-slate-950/95 backdrop-blur-sm rounded-2xl border border-indigo-500/30 p-8 shadow-2xl shadow-indigo-500/20">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-500/20 rounded-full mb-4">
-                <Rocket className="w-8 h-8 text-cyan-400" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-500/20 rounded-full mb-4">
+                <Rocket className="w-8 h-8 text-indigo-400" />
               </div>
               <h1 className="text-2xl font-bold text-white mb-2">STEM 故事宇宙</h1>
-              <p className="text-slate-400">登录开始你的探索之旅</p>
+              <p className="text-white/60">登录开始你的探索之旅</p>
             </div>
 
             {/* Tab Switcher */}
@@ -88,8 +88,8 @@ export default function LoginPage() {
                 onClick={() => setMode('password')}
                 className={`flex-1 py-2 rounded-lg transition-colors ${
                   mode === 'password'
-                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
-                    : 'bg-slate-800/50 text-slate-400 border border-slate-700'
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500'
+                    : 'bg-white/5 text-white/60 border border-white/10'
                 }`}
               >
                 密码登录
@@ -99,8 +99,8 @@ export default function LoginPage() {
                 onClick={() => setMode('sms')}
                 className={`flex-1 py-2 rounded-lg transition-colors ${
                   mode === 'sms'
-                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
-                    : 'bg-slate-800/50 text-slate-400 border border-slate-700'
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500'
+                    : 'bg-white/5 text-white/60 border border-white/10'
                 }`}
               >
                 验证码登录
@@ -111,24 +111,24 @@ export default function LoginPage() {
             {mode === 'password' ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">用户名</label>
+                  <label className="block text-sm text-white/60 mb-2">用户名</label>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 transition-colors"
                     placeholder="输入用户名"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">密码</label>
+                  <label className="block text-sm text-white/60 mb-2">密码</label>
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 transition-colors"
                     placeholder="输入密码"
                     required
                   />
@@ -143,7 +143,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? '登录中...' : '登录'}
                 </button>
@@ -154,7 +154,7 @@ export default function LoginPage() {
           </div>
 
           {/* Decorative footer */}
-          <div className="mt-6 text-center text-xs text-slate-600 font-mono">
+          <div className="mt-6 text-center text-xs text-white/40">
             <p>SYSTEM: v1.0.0 | MODE: SECURE</p>
           </div>
         </div>

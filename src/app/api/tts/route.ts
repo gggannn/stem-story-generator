@@ -19,14 +19,16 @@ interface TTSRequest {
   volume?: number;
 }
 
-// 默认语音配置
-const DEFAULT_VOICE = 'xiaoyun'; // 云小蜜
+// 默认语音配置 - 阿里云标准发音人
+const DEFAULT_VOICE = 'Xiaoyun'; // 云小蜜（注意大写）
 const VOICE_OPTIONS: Record<string, string> = {
-  xiaoyun: '云小蜜 (女声)',
-  xiaogang: '阿钢 (男声)',
-  ruoxi: '若琪 (女声)',
-  ruijia: '瑞佳 (女声)',
-  jingjing: '京儿 (女声)',
+  Xiaoyun: '云小蜜 (女声)',
+  Xiaogang: '阿钢 (男声)',
+  Ruoxi: '若琪 (女声)',
+  Siqi: '思琪 (女声)',
+  Sijia: '思佳 (女声)',
+  Sicheng: '思诚 (男声)',
+  Aiqi: '艾琪 (女声)',
 };
 
 // Token 缓存

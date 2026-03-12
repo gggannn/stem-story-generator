@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { getUserId } from '@/lib/storage';
+import { Identity } from '@/types';
+import { IDENTITIES } from '@/constants/topics';
 
 interface ExplorerProfile {
   name: string;
   age: number;
+  identity?: Identity;
   avatar?: string;
   createdAt: number;
 }
@@ -55,7 +58,7 @@ function GlitchText({ text, className = '' }: { text: string; className?: string
   return (
     <span className={`relative inline-block ${className}`}>
       <span className="relative z-10">{text}</span>
-      <span className="absolute top-0 left-0 -z-10 text-cyan-400 opacity-50 animate-glitch-1" aria-hidden="true">
+      <span className="absolute top-0 left-0 -z-10 text-indigo-400 opacity-50 animate-glitch-1" aria-hidden="true">
         {text}
       </span>
       <span className="absolute top-0 left-0 -z-10 text-pink-500 opacity-50 animate-glitch-2" aria-hidden="true">
@@ -68,8 +71,8 @@ function GlitchText({ text, className = '' }: { text: string; className?: string
 export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
   const [name, setName] = useState('');
   const [age, setAge] = useState(8);
+  const [identity, setIdentity] = useState<Identity>('explorer');
   const [step, setStep] = useState(0);
-  const [isScanning, setIsScanning] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -81,7 +84,6 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
 
   const handleStart = () => {
     setStep(1);
-    setIsScanning(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -92,6 +94,7 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
     const profile: ExplorerProfile = {
       name: name.trim(),
       age,
+      identity,
       createdAt: Date.now(),
     };
     saveProfile(profile);
@@ -103,74 +106,48 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" />
-
-      {/* Scanning effect */}
-      {isScanning && (
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 animate-pulse opacity-30">
-            <div className="h-full w-full bg-[linear-gradient(0deg,transparent_50%,rgba(34,211,238,0.1)_50%)] bg-[length:100%_4px]" />
-          </div>
-        </div>
-      )}
-
       {/* Main container */}
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-24 h-24 mb-4 relative">
-            {/* Scanning ring */}
-            <div className="absolute inset-0 border-2 border-cyan-500/30 rounded-full animate-ping" />
-            <div className="absolute inset-0 border border-cyan-500/50 rounded-full animate-spin" style={{ animationDuration: '10s' }} />
-            <svg
-              className="w-12 h-12 text-cyan-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-              />
-            </svg>
+            <div className="absolute inset-0 border-4 border-blue-500/30 rounded-full animate-pulse" />
+            <div className="absolute inset-0 border-2 border-indigo-400/50 rounded-full animate-spin" style={{ animationDuration: '10s' }} />
+            <span className="text-5xl">🚀</span>
           </div>
-          <h1 className="font-mono text-2xl md:text-3xl font-bold text-cyan-400 tracking-wider">
-            <GlitchText text="STEM 探险者" />
+          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-wider mb-2">
+            STEM 探险者
           </h1>
-          <p className="font-mono text-slate-500 text-sm mt-2">
-            {isScanning ? '>> 系统初始化中...' : '>> 准备就绪'}
+          <p className="text-white/60 text-base">
+            {step === 0 ? '准备好开始你的科学冒险了吗？' : '请建立你的探险者档案'}
           </p>
         </div>
 
         {/* Form card */}
-        <div className="relative bg-slate-900/80 backdrop-blur border border-cyan-500/30 rounded-2xl p-6 md:p-8">
-          <ScanLine />
-
+        <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 md:p-8 shadow-2xl">
           {step === 0 && (
-            <div className="text-center">
-              <p className="font-mono text-slate-300 mb-6 leading-relaxed">
+            <div className="text-center space-y-8">
+              <p className="text-white/90 text-lg leading-relaxed">
                 欢迎来到 STEM 宇宙！<br />
-                <span className="text-cyan-400">成为探险者</span>，开启科学冒险之旅
+                在这里，你将化身<span className="text-blue-400 font-bold">科学探险家</span>，<br />
+                探索恐龙、宇宙、机器人等奇妙世界。
               </p>
               <button
                 onClick={handleStart}
-                className="group relative px-8 py-3 bg-transparent border border-cyan-500/50 text-cyan-400 font-mono font-bold rounded-lg overflow-hidden transition-all hover:border-cyan-400"
+                className="rocket-btn w-full"
               >
-                <span className="relative z-10">开始初始化 &gt;&gt;</span>
-                <div className="absolute inset-0 bg-cyan-500/10 translate-y-full group-hover:translate-y-0 transition-transform" />
+                开始创建档案
               </button>
             </div>
           )}
 
           {step === 1 && (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Name input */}
               <div>
-                <label className="block font-mono text-sm text-cyan-400 mb-2">
-                  <span className="text-slate-500">01.</span> 探险者代号
+                <label className="block text-base font-medium text-white mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">1</span>
+                  你的探险者代号
                 </label>
                 <input
                   ref={inputRef}
@@ -178,15 +155,16 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="输入你的名字..."
-                  className="w-full bg-slate-950/50 text-slate-200 font-mono placeholder-slate-600 px-4 py-3 rounded-lg border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:outline-none transition-all"
+                  className="w-full bg-white/5 text-white placeholder-white/40 px-6 py-4 rounded-2xl border border-white/10 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-all text-lg"
                   required
                 />
               </div>
 
               {/* Age selector */}
               <div>
-                <label className="block font-mono text-sm text-cyan-400 mb-2">
-                  <span className="text-slate-500">02.</span> 探险家年龄
+                <label className="block text-base font-medium text-white mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">2</span>
+                  你的年龄
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {[5, 6, 7, 8, 9, 10, 11, 12].map((a) => (
@@ -194,13 +172,43 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
                       key={a}
                       type="button"
                       onClick={() => setAge(a)}
-                      className={`px-4 py-2 font-mono rounded-lg border transition-all ${
-                        age === a
-                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
-                          : 'bg-slate-950/50 border-slate-700 text-slate-400 hover:border-slate-600'
+                      className={`capsule-btn ${
+                        age === a ? 'capsule-btn-active' : 'hover:bg-white/10'
                       }`}
                     >
                       {a}岁
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Identity selector */}
+              <div>
+                <label className="block text-base font-medium text-white mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm">3</span>
+                  选择你的探索方式
+                </label>
+                <div className="space-y-3">
+                  {IDENTITIES.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setIdentity(item.id)}
+                      className={`w-full p-4 rounded-2xl border transition-all text-left ${
+                        identity === item.id
+                          ? 'bg-white/20 border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-3xl">{item.emoji}</span>
+                        <div className="flex-1">
+                          <div className={`font-bold text-lg ${identity === item.id ? 'text-white' : 'text-white/80'}`}>
+                            {item.label}
+                          </div>
+                          <div className="text-sm text-white/60 mt-1">{item.tagline}</div>
+                        </div>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -210,25 +218,19 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
               <button
                 type="submit"
                 disabled={!name.trim() || isTransitioning}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-mono font-bold rounded-lg transition-all hover:from-cyan-400 hover:to-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rocket-btn h-14 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isTransitioning ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="animate-spin">✦</span>
-                    光速传输中...
+                    <span className="animate-spin">✨</span>
+                    档案生成中...
                   </span>
                 ) : (
-                  '>> 确认初始化'
+                  '确认并开启探索'
                 )}
               </button>
             </form>
           )}
-        </div>
-
-        {/* Decorative elements */}
-        <div className="mt-6 font-mono text-xs text-slate-600 text-center space-y-1">
-          <p>SYSTEM: v1.0.0 | MODE: EXPLORER</p>
-          <p className="text-slate-700">◆ ◆ ◆</p>
         </div>
       </div>
 
@@ -236,40 +238,13 @@ export function ExplorerOnboarding({ onComplete }: OnboardingProps) {
       {isTransitioning && (
         <div className="fixed inset-0 z-50 bg-slate-950 animate-warp-in">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-full h-full bg-gradient-radial from-cyan-500/20 to-transparent animate-pulse" />
+            <div className="w-full h-full bg-gradient-radial from-blue-500/20 to-transparent animate-pulse" />
           </div>
         </div>
       )}
 
       {/* Inline styles for custom animations */}
       <style jsx>{`
-        @keyframes scan {
-          0%, 100% { top: 0; }
-          50% { top: 100%; }
-        }
-        .animate-scan {
-          animation: scan 2s ease-in-out infinite;
-        }
-        @keyframes glitch-1 {
-          0%, 100% { transform: translate(0); }
-          20% { transform: translate(-2px, 2px); }
-          40% { transform: translate(-2px, -2px); }
-          60% { transform: translate(2px, 2px); }
-          80% { transform: translate(2px, -2px); }
-        }
-        @keyframes glitch-2 {
-          0%, 100% { transform: translate(0); }
-          20% { transform: translate(2px, -2px); }
-          40% { transform: translate(2px, 2px); }
-          60% { transform: translate(-2px, -2px); }
-          80% { transform: translate(-2px, 2px); }
-        }
-        .animate-glitch-1 {
-          animation: glitch-1 3s ease-in-out infinite;
-        }
-        .animate-glitch-2 {
-          animation: glitch-2 2s ease-in-out infinite;
-        }
         @keyframes warp-in {
           0% {
             transform: scale(1);
@@ -308,6 +283,7 @@ interface ProfileEditorProps {
 export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) {
   const [name, setName] = useState(profile.name);
   const [age, setAge] = useState(profile.age);
+  const [identity, setIdentity] = useState<Identity>(profile.identity || 'explorer');
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -318,6 +294,7 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
     const updatedProfile: ExplorerProfile = {
       name: name.trim(),
       age,
+      identity,
       createdAt: profile.createdAt,
     };
     saveProfile(updatedProfile);
@@ -333,20 +310,20 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-slate-900 border border-cyan-500/30 rounded-2xl p-6 w-full max-w-sm">
+      <div className="relative bg-slate-950/95 border border-indigo-500/30 rounded-2xl p-6 w-full max-w-sm shadow-2xl shadow-indigo-500/20">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-mono text-lg text-cyan-400 flex items-center gap-2">
-            <span className="text-slate-500">◆</span>
+          <h2 className="font-semibold text-lg text-white flex items-center gap-2">
+            <span className="text-indigo-400">◆</span>
             探险者资料
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-white/40 hover:text-white/80 transition-colors"
           >
             ✕
           </button>
@@ -354,28 +331,28 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block font-mono text-xs text-slate-500 mb-2">探险者代号</label>
+            <label className="block text-sm text-white/60 mb-2">探险者代号</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-950 text-slate-200 font-mono px-4 py-2 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none"
+              className="w-full bg-white/5 text-white px-4 py-2 rounded-lg border border-white/10 focus:border-indigo-500 focus:outline-none transition-colors"
               required
             />
           </div>
 
           <div>
-            <label className="block font-mono text-xs text-slate-500 mb-2">年龄</label>
+            <label className="block text-sm text-white/60 mb-2">年龄</label>
             <div className="flex flex-wrap gap-2">
               {[5, 6, 7, 8, 9, 10, 11, 12].map((a) => (
                 <button
                   key={a}
                   type="button"
                   onClick={() => setAge(a)}
-                  className={`px-3 py-1 font-mono text-sm rounded-lg border transition-all ${
+                  className={`px-3 py-1 text-sm rounded-lg border transition-all ${
                     age === a
-                      ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
-                      : 'bg-slate-950 border-slate-700 text-slate-400 hover:border-slate-600'
+                      ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300'
+                      : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20'
                   }`}
                 >
                   {a}
@@ -384,10 +361,38 @@ export function ProfileEditor({ profile, onSave, onClose }: ProfileEditorProps) 
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm text-white/60 mb-2">探索方式</label>
+            <div className="space-y-2">
+              {IDENTITIES.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setIdentity(item.id)}
+                  className={`w-full p-2 rounded-lg border transition-all text-left ${
+                    identity === item.id
+                      ? 'bg-indigo-500/20 border-indigo-500'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{item.emoji}</span>
+                    <div className="flex-1">
+                      <div className={`text-sm font-medium ${identity === item.id ? 'text-indigo-300' : 'text-white/80'}`}>
+                        {item.label}
+                      </div>
+                      <div className="text-xs text-white/40">{item.tagline}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={!name.trim() || isSaving}
-            className="w-full py-2 bg-cyan-500/20 text-cyan-400 font-mono border border-cyan-500/50 rounded-lg hover:bg-cyan-500/30 transition-all disabled:opacity-50"
+            className="w-full py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? '保存中...' : '保存修改'}
           </button>

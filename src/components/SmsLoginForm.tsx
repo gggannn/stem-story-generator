@@ -81,25 +81,25 @@ export default function SmsLoginForm({ onSuccess }: SmsLoginFormProps) {
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div>
-        <label className="block text-sm text-slate-400 mb-2">手机号</label>
+        <label className="block text-sm text-white/60 mb-2">手机号</label>
         <input
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-          className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 transition-colors"
           placeholder="请输入手机号"
           maxLength={11}
         />
       </div>
 
       <div>
-        <label className="block text-sm text-slate-400 mb-2">验证码</label>
+        <label className="block text-sm text-white/60 mb-2">验证码</label>
         <div className="flex gap-2">
           <input
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+            className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 transition-colors"
             placeholder="6位验证码"
             maxLength={6}
           />
@@ -107,7 +107,7 @@ export default function SmsLoginForm({ onSuccess }: SmsLoginFormProps) {
             type="button"
             onClick={handleSendCode}
             disabled={countdown > 0 || loading || !phone}
-            className="px-4 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
+            className="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg disabled:bg-white/5 disabled:text-white/40 transition-colors"
           >
             {countdown > 0 ? `${countdown}s` : '发送'}
           </button>
@@ -123,7 +123,7 @@ export default function SmsLoginForm({ onSuccess }: SmsLoginFormProps) {
       <button
         type="submit"
         disabled={loading || !phone || !code}
-        className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? '登录中...' : '登录'}
       </button>

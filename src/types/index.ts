@@ -2,6 +2,8 @@ export type StoryMode = 'bedtime' | 'reading';
 
 export type Age = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
+export type Identity = 'explorer' | 'observer' | 'builder' | 'inventor' | 'solver';
+
 export type Topic =
   // Visible Topics (二级)
   | 'dinosaur' | 'space' | 'animal' | 'insect' | 'ocean' | 'human_body' | 'plants'
@@ -115,6 +117,7 @@ export interface HistoryItem {
   mode: StoryMode;
   title: string;
   topic: Topic;
+  age: Age;
   timestamp: number;
 }
 

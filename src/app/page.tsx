@@ -1,25 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { StoryMode, Age, Topic, Duration, HistoryItem, CachedStory, Story, StorageKey } from '@/types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { StoryMode, Age, Topic, Duration, HistoryItem, CachedStory, Story, StorageKey, BedtimeStory, ReadingStory } from '@/types';
 import { BedtimeResult } from '@/components/BedtimeResult';
 import { ReadingResult } from '@/components/ReadingResult';
 import { CosmicVoid } from '@/components/CosmicVoid';
-import { ExplorerOnboarding, loadProfile } from '@/components/ExplorerOnboarding';
-import { SpaceExplorer } from '@/components/SpaceExplorer';
+import { ExplorerOnboarding, loadProfile, ProfileEditor } from '@/components/ExplorerOnboarding';
+import { Dashboard } from '@/components/Dashboard';
 import type { ExplorerProfile } from '@/components/ExplorerOnboarding';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserId, loadFromStorage, saveToStorage, removeFromStorage, loadCachedStory, saveCachedStory, getCacheKey as getStorageCacheKey } from '@/lib/storage';
-import { RefreshCw, Rocket } from 'lucide-react';
+import { getUserId, loadFromStorage, saveToStorage, loadCachedStory, saveCachedStory } from '@/lib/storage';
+import { Rocket } from 'lucide-react';
+import { LOADING_MESSAGES } from '@/constants/topics';
 
-// Fun loading messages
-const loadingMessages = [
-  '正在联络外星科学家...',
-  '正在组装有趣的故事...',
-  '正在收集科学知识...',
-  '正在施放创意魔法...',
-  '正在打开知识宝库...',
-];
+const loadingMessages = LOADING_MESSAGES;
 
 // Storage keys
 const HISTORY_KEY: StorageKey = 'stem_story_history';
@@ -27,9 +22,10 @@ const CACHE_PREFIX: StorageKey = 'stem_story_cache';
 const API_COUNT_KEY: StorageKey = 'stem_story_api_count';
 const API_DATE_KEY: StorageKey = 'stem_story_api_date';
 
-function getCacheKey(mode: StoryMode, age: Age, topic: Topic, minutes: Duration): string {
+function getCacheKey(mode: StoryMode, age: Age, topic: Topic, minutes: Duration, identity?: string): string {
   const suffix = mode === 'bedtime' ? minutes : 'A4';
-  return `${mode}|${age}|${topic}|${suffix}|zh`;
+  const identityPart = identity || 'explorer';
+  return `${mode}|${age}|${topic}|${suffix}|${identityPart}|zh`;
 }
 
 function loadHistory(userId: string | null): HistoryItem[] {
@@ -67,7 +63,7 @@ function incrementApiCount(userId: string | null) {
 }
 
 export default function Home() {
-  const { user, logout, isLoading: authLoading } = useAuth();
+  const { logout, isLoading: authLoading } = useAuth();
 
   // Hydration 修复：客户端渲染标记
   const [isClient, setIsClient] = useState(false);
@@ -78,15 +74,13 @@ export default function Home() {
 
   const [mode, setMode] = useState<StoryMode>('bedtime');
   const [age, setAge] = useState<Age>(8);
-  const [topic, setTopic] = useState<Topic>('airplane');
-  const [minutes, setMinutes] = useState<Duration>(10);
   const [explorerName, setExplorerName] = useState('');
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('正在准备魔法...');
-  const [error, setError] = useState<string | null>(null);
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
-  const [apiCount, setApiCount] = useState(0);
+  const [, setApiCount] = useState(0);
+  const [, setError] = useState<string | null>(null);
 
   // Get current user ID
   const userId = getUserId();
@@ -120,13 +114,31 @@ export default function Home() {
 
   // Show onboarding if no profile
   if (isClient && !profile) {
-    return <ExplorerOnboarding onComplete={handleProfileComplete} />;
+    return (
+      <>
+        <CosmicVoid />
+        <ExplorerOnboarding onComplete={handleProfileComplete} />
+      </>
+    );
   }
 
-  // Show SpaceExplorer when profile exists and no story is displayed
-  const handleStoryGenerated = (story: Story, storyMode: StoryMode) => {
-    setCurrentStory(story);
-    setMode(storyMode);
+  const handleDashboardGenerate = (targetMode: StoryMode, targetAge: Age, targetTopic: Topic, targetMinutes?: number) => {
+    const duration = targetMinutes || 10;
+    generateStory(targetTopic, targetAge, targetMode, duration as Duration, explorerName, false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setProfile(null);
+    setCurrentStory(null);
+  };
+
+  const handleEditProfile = () => {
+    setShowProfileEditor(true);
+  };
+
+  const handleProfileEditorClose = () => {
+    setShowProfileEditor(false);
   };
 
   const generateStory = async (
@@ -137,7 +149,8 @@ export default function Home() {
     targetExplorerName: string,
     forceGenerate: boolean = false
   ) => {
-    const cacheKey = getCacheKey(targetMode, targetAge, targetTopic, targetMinutes);
+    const targetIdentity = profile?.identity || 'explorer';
+    const cacheKey = getCacheKey(targetMode, targetAge, targetTopic, targetMinutes, targetIdentity);
     console.log('CacheKey:', cacheKey);
 
     if (!forceGenerate) {
@@ -145,12 +158,14 @@ export default function Home() {
       if (cached) {
         console.log('✓ Using cached story');
         setCurrentStory(cached.story);
+        setMode(targetMode);
         const newHistoryItem: HistoryItem = {
           id: crypto.randomUUID(),
           key: cacheKey,
           mode: targetMode,
           title: cached.story.title,
           topic: targetTopic,
+          age: targetAge,
           timestamp: Date.now(),
         };
         const newHistory = [newHistoryItem, ...history].slice(0, 3);
@@ -187,6 +202,7 @@ export default function Home() {
           mood: targetMode === 'bedtime' ? 'sleepy' : 'curious',
           level: targetAge <= 6 ? 'L1' : targetAge <= 9 ? 'L2' : 'L3',
           explorer_name: targetExplorerName,
+          identity: targetIdentity,
         }),
       });
 
@@ -210,6 +226,7 @@ export default function Home() {
 
       console.log('>>> Setting current story:', story.title);
       setCurrentStory(story);
+      setMode(targetMode);
 
       const newHistoryItem: HistoryItem = {
         id: crypto.randomUUID(),
@@ -217,6 +234,7 @@ export default function Home() {
         mode: targetMode,
         title: story.title,
         topic: targetTopic,
+        age: targetAge,
         timestamp: Date.now(),
       };
       const newHistory = [newHistoryItem, ...history].slice(0, 3);
@@ -231,12 +249,12 @@ export default function Home() {
     }
   };
 
-  const handleGenerate = () => {
-    generateStory(topic, age, mode, minutes, explorerName, false);
-  };
-
   const handleRefresh = () => {
-    generateStory(topic, age, mode, minutes, explorerName, true);
+    if (!currentStory) return;
+    const historyItem = history.find(h => h.title === currentStory.title);
+    if (historyItem) {
+      generateStory(historyItem.topic, historyItem.age, historyItem.mode, 10, explorerName, true);
+    }
   };
 
   const handleHistorySelect = (item: HistoryItem) => {
@@ -263,39 +281,97 @@ export default function Home() {
     );
   }
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <>
+        <CosmicVoid />
+        <div className="min-h-screen flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center space-y-6"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-20 h-20 mx-auto rounded-full border-4 border-indigo-500/20 border-t-indigo-500"
+            />
+            <Rocket className="w-12 h-12 mx-auto text-indigo-400" />
+            <p className="text-xl font-medium">{loadingMessage}</p>
+          </motion.div>
+        </div>
+      </>
+    );
+  }
+
   // 显示结果页
   if (currentStory) {
-    return mode === 'bedtime' ? (
-      <BedtimeResult
-        story={currentStory as any}
-        onBack={handleBack}
-        onRegenerate={handleRefresh}
-        isLoading={isLoading}
-      />
-    ) : (
-      <ReadingResult
-        story={currentStory as any}
-        onBack={handleBack}
-        onRegenerate={handleRefresh}
-        isLoading={isLoading}
-      />
+    return (
+      <>
+        <CosmicVoid />
+        <AnimatePresence mode="wait">
+          {mode === 'bedtime' ? (
+            <motion.div
+              key="bedtime"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <BedtimeResult
+                story={currentStory as BedtimeStory}
+                onBack={handleBack}
+                onRegenerate={handleRefresh}
+                isLoading={isLoading}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="reading"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <ReadingResult
+                story={currentStory as ReadingStory}
+                onBack={handleBack}
+                onRegenerate={handleRefresh}
+                isLoading={isLoading}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
     );
   }
 
   return (
     <>
       <CosmicVoid />
-      {/* Show SpaceExplorer when profile exists */}
-      <SpaceExplorer
-        profile={profile!}
-        onProfileUpdate={handleProfileUpdate}
-        onStoryGenerated={handleStoryGenerated}
-        history={history}
-        initialAge={age}
-        initialMode={mode}
-        user={user}
-        onLogout={logout}
-      />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="dashboard"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
+          <Dashboard
+            profile={{ name: profile!.name, age: profile!.age as Age, identity: profile!.identity }}
+            history={history}
+            onGenerate={handleDashboardGenerate}
+            onHistoryClick={handleHistorySelect}
+            onLogout={handleLogout}
+            onEditProfile={handleEditProfile}
+          />
+        </motion.div>
+      </AnimatePresence>
+      {showProfileEditor && profile && (
+        <ProfileEditor
+          profile={profile}
+          onSave={handleProfileUpdate}
+          onClose={handleProfileEditorClose}
+        />
+      )}
     </>
   );
 }

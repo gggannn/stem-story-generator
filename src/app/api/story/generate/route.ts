@@ -11,6 +11,7 @@ interface GenerateRequest {
   mood: string;
   level: string;
   explorer_name?: string;
+  identity?: string;
 }
 
 interface BedtimeResponse {
@@ -129,15 +130,130 @@ const topicMap: Record<string, string> = {
   wild_animals: '野生动物 - 野外生存高手',
   pets: '宠物世界 - 人类的好朋友',
   extinct_animals: '灭绝动物 - 消失的物种',
+  migration: '动物迁徙 - 长途旅行的秘密',
+  animal_senses: '动物感官 - 超能力探测器',
+
+  // Space sub-topics (additional)
+  moon_landing: '登月探险 - 人类的月球之旅',
+  aliens_search: '寻找外星人 - 宇宙中的邻居',
+
+  // Dinosaur sub-topics (additional)
+  extinction_mystery: '恐龙灭绝之谜 - 远古巨兽的消失',
+
+  // Insect sub-topics (additional)
+  mimicry: '昆虫伪装术 - 隐身大师',
+  beetle_armor: '甲虫盔甲 - 坚硬的外壳',
+
+  // Ocean sub-topics (additional)
+  ocean_currents: '洋流 - 海洋的高速公路',
+  marine_protection: '海洋保护 - 守护蓝色家园',
+
+  // Human body sub-topics
+  skeleton: '骨骼系统 - 身体的支架',
+  digestion: '消化系统 - 食物的旅程',
+  brain_power: '大脑的力量 - 思考的秘密',
+  five_senses: '五感探索 - 感知世界的窗口',
+  blood_travel: '血液循环 - 生命的河流',
+  DNA: 'DNA密码 - 生命的蓝图',
+
+  // Plants sub-topics
+  photosynthesis: '光合作用 - 植物的魔法厨房',
+  seeds_travel: '种子旅行 - 植物的传播方式',
+  carnivorous_plants: '食肉植物 - 会吃虫的植物',
+  giant_trees: '巨树探秘 - 森林中的巨人',
+  flowers: '花朵的秘密 - 美丽与智慧',
+
+  // Robot sub-topics (additional)
+  bionic_robots: '仿生机器人 - 模仿生物的机器',
+  robot_coding: '机器人编程 - 教机器人做事',
+
+  // Airplane sub-topics (additional)
+  drones: '无人机 - 会飞的机器人',
+  hot_air_balloons: '热气球 - 最早的飞行器',
+  aerodynamics: '空气动力学 - 飞行的科学',
+
+  // Programming sub-topics
+  algorithms: '算法思维 - 解决问题的步骤',
+  coding_logic: '编程逻辑 - 让电脑听话',
+  hardware: '硬件世界 - 电脑的零件',
+  game_design: '游戏设计 - 创造自己的游戏',
+  scratch_fun: 'Scratch编程 - 拖拽积木做游戏',
+
+  // Internet sub-topics
+  world_wide_web: '万维网 - 互联网的诞生',
+  cyber_safety: '网络安全 - 保护自己的秘密',
+  social_media: '社交媒体 - 网上交朋友',
+  cloud_storage: '云存储 - 数据住在云里',
+  '5G_6G': '5G/6G - 超快的网络',
+
+  // Cars/Trains sub-topics
+  electric_cars: '电动汽车 - 用电跑的车',
+  maglev_trains: '磁悬浮列车 - 漂浮的火车',
+  engine_work: '发动机原理 - 车怎么跑起来',
+  racing_cars: '赛车 - 速度与激情',
+  smart_traffic: '智能交通 - 未来的道路',
+
+  // Architecture sub-topics
+  skyscrapers: '摩天大楼 - 直冲云霄的建筑',
+  bridges: '桥梁工程 - 连接两岸',
+  ancient_wonders: '古代奇迹 - 古人的智慧',
+  eco_friendly_houses: '环保建筑 - 绿色的家',
+  tunnels: '隧道工程 - 穿山越岭',
+
+  // Machines sub-topics
+  simple_machines: '简单机械 - 杠杆滑轮',
+  gears: '齿轮传动 - 咬合的力量',
+  hydraulic_power: '液压动力 - 水的力量',
+  clockwork: '钟表机械 - 精密的齿轮',
+  factory_automation: '工厂自动化 - 机器生产线',
+
+  // Energy sub-topics
+  solar_power: '太阳能 - 阳光发电',
+  wind_turbines: '风力发电 - 风车转转转',
+  electricity: '电的秘密 - 看不见的能量',
+  batteries: '电池 - 储存电的盒子',
+  nuclear_energy: '核能 - 原子的力量',
+
+  // Forest sub-topics (additional)
+  rainforest: '热带雨林 - 地球之肺',
+  seasonal_changes: '四季变化 - 森林的四季',
+
+  // Mountains sub-topics
+  volcanoes: '火山 - 地球的怒吼',
+  glaciers: '冰川 - 移动的冰河',
+  river_cycle: '河流循环 - 水的旅程',
+  caves: '洞穴探险 - 地下的秘密',
+  plate_tectonics: '板块运动 - 大陆漂移',
+
+  // Weather sub-topics
+  clouds: '云的形成 - 天空的棉花糖',
+  storms: '风暴 - 大自然的力量',
+  global_warming: '全球变暖 - 地球发烧了',
+  seasons: '四季成因 - 为什么有春夏秋冬',
+  rainbows: '彩虹 - 雨后的七彩桥',
+  natural_disasters: '自然灾害 - 了解与防范',
+
+  // Shapes sub-topics
+  '2D_3D_shapes': '平面与立体 - 形状的世界',
+  symmetry: '对称之美 - 镜像的秘密',
+  geometry_in_nature: '自然中的几何 - 大自然的图案',
+  architecture_math: '建筑中的数学 - 形状与结构',
+
+  // Logic sub-topics
+  sequences: '数列规律 - 找出下一个',
+  binary_code: '二进制 - 0和1的世界',
+  probability: '概率 - 可能性有多大',
+  strategy_games: '策略游戏 - 聪明的玩法',
+  paradoxes: '悖论 - 有趣的矛盾',
 };
 
 // Story angle variants to add diversity
 const storyAngles = [
-  "从探险家发现问题的角度 - 主角偶然发现一个奇怪的现象，引发好奇",
-  "从动手做实验的角度 - 主角通过动手操作来验证想法",
-  "从仔细观察的角度 - 主角通过细心观察发现秘密",
-  "从解决一个具体问题的角度 - 主角遇到一个麻烦，需要用科学知识解决",
-  "从对比发现的角度 - 主角通过对比不同事物发现规律",
+  "从意外发现异常现象的角度 - 主角先注意到一个奇怪变化，由此产生好奇",
+  "从动手尝试验证想法的角度 - 主角通过操作、测试或实验来寻找答案",
+  "从细致观察与记录的角度 - 主角通过观察细节、比较变化来发现秘密",
+  "从解决一个具体麻烦的角度 - 主角遇到现实问题，需要用科学知识解决",
+  "从比较两种事物差异的角度 - 主角通过对比不同现象或结果发现规律",
 ];
 
 // Build system prompt based on mode
@@ -157,13 +273,25 @@ function buildSystemPrompt(req: GenerateRequest): string {
 
   const ageGroup = req.age <= 6 ? '5-6岁' : req.age <= 9 ? '7-9岁' : '10-12岁';
 
+  // Identity-based narrative style
+  const identityMap: Record<string, string> = {
+    explorer: '星际探索者，通过出发冒险、寻找线索和探索未知世界来发现科学秘密',
+    observer: '未来观察家，擅长观察细节、记录变化、提出问题，并从现象中发现规律',
+    builder: '机械建造师，会通过设计、搭建、修理和优化工具来解决问题',
+    inventor: '奇想发明家，善于把普通材料变成新奇发明，用创意推动故事发展',
+    solver: '时空解谜家，会通过发现规律、破解线索和逻辑推理来揭开科学谜题',
+  };
+  const identityDesc = identityMap[req.identity || 'explorer'] || identityMap.explorer;
+
   // Explorer identity handling
   const finalName = req.explorer_name || '一恒';
   const identitySection = `
 # Explorer Identity (探险家身份)
 - 本故事的主角名字叫：${finalName}，${ageGroup}的孩子
+- 身份设定：${finalName}是${identityDesc}
 - 叙事视角：**必须使用第二人称"你"**，让${finalName}成为故事里的探险家
 - 主角必须亲自**动手做、亲眼看、亲身体验**，不能只是"听说"或"看到"
+- 行动方式要符合身份特点，但不要机械重复"因为你是某某所以……"
 `;
 
   // Random story angle for diversity
@@ -178,7 +306,15 @@ function buildSystemPrompt(req: GenerateRequest): string {
 
 # Explorer Identity
 - **主角名字**：${finalName}
+- **身份设定**：${finalName}是${identityDesc}
 - **叙事视角**：让${finalName}直接作为探险家。禁止描写"伟大的科学家"。主角需拥有自尊、生存、好奇的小角色视角。
+- **行动方式**：主角的行动和思考方式要符合身份特点，但不要机械重复"因为你是某某所以……"
+
+## 故事构成三要素
+- **Identity（我是谁）**：决定主角解决问题的偏好方式和长期人格
+- **Story Angle（从哪切入）**：决定这一篇故事的开场方式和推进结构
+- **Theme（讲什么）**：决定科学内容主题
+- 三者需自然融合，让身份影响行动风格，让切入角度决定故事结构，让主题决定知识内容
 
 ## 名字使用规范（!!!重要!!!）
 - 第一次出现主角名字时用"${finalName}"，之后用"他"指代
@@ -396,7 +532,15 @@ function buildSystemPrompt(req: GenerateRequest): string {
 
 # Explorer Identity
 - **主角名字**：${finalName}
+- **身份设定**：${finalName}是${identityDesc}
 - **叙事视角**：让${finalName}直接作为探险家。禁止描写"伟大的科学家"。主角需拥有自尊、生存、好奇的小角色视角。
+- **行动方式**：主角的行动和思考方式要符合身份特点，但不要机械重复"因为你是某某所以……"
+
+## 故事构成三要素
+- **Identity（我是谁）**：决定主角解决问题的偏好方式和长期人格
+- **Story Angle（从哪切入）**：决定这一篇故事的开场方式和推进结构
+- **Theme（讲什么）**：决定科学内容主题
+- 三者需自然融合，让身份影响行动风格，让切入角度决定故事结构，让主题决定知识内容
 
 ## 名字使用规范（!!!重要!!!）
 - 第一次出现主角名字时用"${finalName}"，之后用"他"指代
@@ -656,7 +800,7 @@ async function callLLM(prompt: string, mode: 'bedtime' | 'reading', topic: strin
         { role: 'user', content: '请根据上述要求生成故事内容。' },
       ],
       temperature: 0.7,
-      max_tokens: mode === 'bedtime' ? 2000 : 1500,
+      max_tokens: mode === 'bedtime' ? 4000 : 3000,
       response_format: { type: 'json_object' },
     }),
   });
@@ -671,12 +815,20 @@ async function callLLM(prompt: string, mode: 'bedtime' | 'reading', topic: strin
 
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content;
+  const finishReason = data.choices?.[0]?.finish_reason;
 
   if (!content) {
     throw new Error('LLM 返回内容为空');
   }
 
+  // 检查是否因为token限制被截断
+  if (finishReason === 'length') {
+    console.warn('⚠️ WARNING: Response truncated due to max_tokens limit!');
+    console.warn('⚠️ Consider increasing max_tokens or using streaming');
+  }
+
   console.log('>>> LLM raw response length:', content.length);
+  console.log('>>> LLM finish_reason:', finishReason);
   console.log('>>> LLM response preview:', content.substring(0, 500));
 
   try {

@@ -10,9 +10,12 @@ export function useTTS(options: UseTTSOptions = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentSegment, setCurrentSegment] = useState(0);
+  const [totalSegments, setTotalSegments] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const segmentsRef = useRef<string[]>([]);
+  const isStoppedRef = useRef(false);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -22,25 +25,23 @@ export function useTTS(options: UseTTSOptions = {}) {
     };
   }, []);
 
-  const speak = async (text: string) => {
-    // Stop any current playback
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+  const playSegment = async (segmentIndex: number) => {
+    if (isStoppedRef.current || segmentIndex >= segmentsRef.current.length) {
+      setIsPlaying(false);
+      setCurrentSegment(0);
+      return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    const text = segmentsRef.current[segmentIndex];
+    setCurrentSegment(segmentIndex + 1);
 
     try {
       const response = await fetch('/api/tts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          voice: options.voice || 'xiaoyun',
+          voice: options.voice || 'Xiaoyun',
           speech_rate: options.speech_rate || 0,
           pitch_rate: options.pitch_rate || 0,
         }),
@@ -52,12 +53,15 @@ export function useTTS(options: UseTTSOptions = {}) {
         throw new Error(data.error || '语音合成失败');
       }
 
-      // Create audio element and play
+      if (isStoppedRef.current) return;
+
       const audio = new Audio(data.audio);
       audioRef.current = audio;
 
-      audio.onplay = () => setIsPlaying(true);
-      audio.onended = () => setIsPlaying(false);
+      audio.onended = () => {
+        playSegment(segmentIndex + 1);
+      };
+
       audio.onerror = () => {
         setError('播放失败');
         setIsPlaying(false);
@@ -68,17 +72,38 @@ export function useTTS(options: UseTTSOptions = {}) {
     } catch (err) {
       setError(err instanceof Error ? err.message : '语音合成失败');
       setIsPlaying(false);
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  const speak = async (text: string) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    isStoppedRef.current = false;
+    setIsLoading(true);
+    setError(null);
+    setIsPlaying(true);
+
+    // 按段落分割（保留标题）
+    const segments = text.split('。').filter(s => s.trim().length > 0).map(s => s + '。');
+    segmentsRef.current = segments;
+    setTotalSegments(segments.length);
+    setCurrentSegment(0);
+
+    setIsLoading(false);
+    await playSegment(0);
+  };
+
   const stop = () => {
+    isStoppedRef.current = true;
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
     setIsPlaying(false);
+    setCurrentSegment(0);
   };
 
   return {
@@ -87,5 +112,7 @@ export function useTTS(options: UseTTSOptions = {}) {
     isLoading,
     isPlaying,
     error,
+    currentSegment,
+    totalSegments,
   };
 }

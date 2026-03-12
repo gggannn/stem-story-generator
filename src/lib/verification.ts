@@ -36,12 +36,11 @@ export async function verifyCode(phone: string, code: string): Promise<{ valid: 
     return { valid: false, attemptsLeft: 0 };
   }
 
-  await pool.query(
-    'UPDATE sms_verification_codes SET attempts = attempts + 1 WHERE id = ?',
-    [record.id]
-  );
-
   if (record.code !== code) {
+    await pool.query(
+      'UPDATE sms_verification_codes SET attempts = attempts + 1 WHERE id = ?',
+      [record.id]
+    );
     return { valid: false, attemptsLeft: 2 - record.attempts };
   }
 

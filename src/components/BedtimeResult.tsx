@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { BedtimeStory } from '@/types';
 import { ArrowLeft, Volume2, VolumeX, RefreshCw, Loader2, Sparkles, Moon, Settings } from 'lucide-react';
 import { CosmicVoid } from './CosmicVoid';
@@ -11,26 +12,28 @@ interface BedtimeResultProps {
   isLoading: boolean;
 }
 
-// 语音选项
+// 语音选项 - 阿里云标准发音人
 const VOICE_OPTIONS = [
-  { value: 'xiaoyun', label: '云小蜜 (女声)' },
-  { value: 'xiaogang', label: '阿钢 (男声)' },
-  { value: 'ruoxi', label: '若琪 (女声)' },
-  { value: 'ruijia', label: '瑞佳 (女声)' },
-  { value: 'jingjing', label: '京儿 (女声)' },
-  { value: 'yina', label: '忆娜 (女声)' },
-  { value: 'jiajia', label: '嘉佳 (女声)' },
+  { value: 'Xiaoyun', label: '云小蜜 (女声)' },
+  { value: 'Xiaogang', label: '阿钢 (男声)' },
+  { value: 'Ruoxi', label: '若琪 (女声)' },
+  { value: 'Siqi', label: '思琪 (女声)' },
+  { value: 'Sijia', label: '思佳 (女声)' },
+  { value: 'Sicheng', label: '思诚 (男声)' },
+  { value: 'Aiqi', label: '艾琪 (女声)' },
 ];
 
 export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: BedtimeResultProps) {
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState('xiaoyun');
+  const [selectedVoice, setSelectedVoice] = useState('Xiaoyun');
   const [speechRate, setSpeechRate] = useState(0);
 
   // Handle both new format (body/recap/parent_tip) and old cached format (story/review/interaction)
-  const storyBody = (story as any).body || (story as any).story || [];
-  const storyRecap = (story as any).recap || (story as any).review || [];
-  const storyParentTip = (story as any).parent_tip || (story as any).interaction || '';
+  type LegacyBedtimeStory = { story?: string[]; review?: string[]; interaction?: string };
+  const legacyStory = story as BedtimeStory & LegacyBedtimeStory;
+  const storyBody = legacyStory.body || legacyStory.story || [];
+  const storyRecap = legacyStory.recap || legacyStory.review || [];
+  const storyParentTip = legacyStory.parent_tip || legacyStory.interaction || '';
 
   const { speak, stop, isLoading: isSpeaking, isPlaying, error: ttsError } = useTTS({
     voice: selectedVoice,
@@ -43,14 +46,21 @@ export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: Bedtim
       return;
     }
     // 合并标题和正文为一个完整的语音文本
-    const fullText = `${story.title}。${storyBody.join('。')}`;
+    const fullText = `${story.title}。${storyBody.join('')}`;
+    console.log('>>> TTS fullText length:', fullText.length);
+    console.log('>>> storyBody array length:', storyBody.length);
+    console.log('>>> storyBody:', storyBody);
     await speak(fullText);
   };
 
   return (
     <>
       <CosmicVoid />
-      <div className="min-h-screen py-8 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="min-h-screen py-8 px-4"
+      >
       <div className="max-w-2xl mx-auto">
         {/* Header with back button */}
         <div className="flex items-center justify-between mb-6">
@@ -68,7 +78,12 @@ export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: Bedtim
         </div>
 
         {/* Story Content */}
-        <div className="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 p-6 md:p-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 p-6 md:p-8"
+        >
           {/* Title */}
           <h1 className="text-2xl md:text-3xl font-bold text-center text-indigo-400 mb-6">
             {story.title}
@@ -108,7 +123,7 @@ export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: Bedtim
               <p className="mt-2">{story.source}</p>
             </details>
           )}
-        </div>
+        </motion.div>
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-6">
@@ -215,7 +230,7 @@ export function BedtimeResult({ story, onBack, onRegenerate, isLoading }: Bedtim
           </div>
         )}
       </div>
-      </div>
+      </motion.div>
     </>
   );
 }
